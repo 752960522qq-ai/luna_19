@@ -1,3 +1,15 @@
+# 0.3.0 — 生日礼物（source only）
+
+- Add cabin prologue, model-based portraits, entrance / door camera cuts and interruptible per-line Cody voice.
+- Retarget uploaded human Idle and PistolAim to May and Cody; add actual M92 / CAR-15 models and independent ammunition.
+- Give 60 pistol rounds; tutorial movement / fire / reload; escalate to one gift decision at ten live zombies.
+- Accept grants 723 with 300 rounds; reject resumes immediately. Exactly 60 total enemies including the two door enemies.
+- Cody shoots with 35% accuracy and 70% same-weapon damage.
+- Add downloaded CC0 effects, edited slices, offline playback, source links and time-range manifest.
+- Persist prologue branch, tutorial, spawn / defeat counters and inventory; migrate old chapter-one saves.
+- Add prologue end save / next chapter / menu; keep existing warehouse chapter.
+- No APK generated.
+
 # 0.2.0 — 双人成鼠
 
 - Replace character-switching test with a May-controlled story/shooter chapter.

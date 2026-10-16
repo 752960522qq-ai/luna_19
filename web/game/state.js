@@ -1,3 +1,5 @@
+import { newPrologue, sanitizePrologue } from "./prologue-state.js";
+import { WEAPONS, stashWeapon } from "./weapons.js";
 export const SAVE_KEY = "double-mice.save.v1";
 export const CHAPTER = "第一章 · 好心的捷径";
 export const OBJECTIVES = [
@@ -15,8 +17,11 @@ const vec = (v, d = [0, 0, 7]) =>
     : d.slice();
 export function freshState(seed = Date.now() >>> 0) {
   return {
-    version: 1,
+    version: 2,
     chapter: 1,
+    weapon: "m92",
+    inventory: { m92: { ammo: 12, reserve: 72 } },
+    prologue: null,
     stage: 0,
     seed,
     spawnSerial: 0,
@@ -38,14 +43,33 @@ export function freshState(seed = Date.now() >>> 0) {
 export function sanitizeSave(raw) {
   if (
     !raw ||
-    raw.version !== 1 ||
-    raw.chapter !== 1 ||
+    ![1, 2].includes(raw.version) ||
+    ![0, 1].includes(raw.chapter) ||
     !raw.player ||
     !raw.cody ||
     !Array.isArray(raw.enemies)
   )
     throw Error("存档格式不兼容");
   const s = freshState();
+  s.version = 2;
+  s.chapter = raw.chapter;
+  s.prologue = raw.chapter === 0 ? sanitizePrologue(raw.prologue) : null;
+  s.weapon = WEAPONS[raw.weapon]
+    ? raw.weapon
+    : raw.chapter === 0
+      ? null
+      : "m92";
+  s.inventory = {};
+  for (const id of Object.keys(WEAPONS)) {
+    const w = raw.inventory?.[id];
+    if (w)
+      s.inventory[id] = {
+        ammo: num(w.ammo, 0, 0, WEAPONS[id].magazine) | 0,
+        reserve: num(w.reserve, 0, 0, 999) | 0,
+      };
+  }
+  if (s.weapon && !s.inventory[s.weapon])
+    s.inventory[s.weapon] = { ammo: 0, reserve: 0 };
   s.stage = num(raw.stage, 0, 0, 4) | 0;
   s.seed = num(raw.seed, s.seed, 0, 0xffffffff) >>> 0;
   s.spawnSerial = num(raw.spawnSerial, 0, 0, 100000) | 0;
@@ -54,8 +78,8 @@ export function sanitizeSave(raw) {
     position: vec(raw.player.position),
     yaw: num(raw.player.yaw, Math.PI, -1000, 1000),
     hp: num(raw.player.hp, 100, 1, 100),
-    ammo: num(raw.player.ammo, 12, 0, 12) | 0,
-    reserve: num(raw.player.reserve, 72, 0, 240) | 0,
+    ammo: num(raw.player.ammo, 12, 0, WEAPONS[s.weapon]?.magazine || 0) | 0,
+    reserve: num(raw.player.reserve, 72, 0, 999) | 0,
   };
   s.cody = {
     position: vec(raw.cody.position, [2, 0, 8]),
@@ -63,7 +87,7 @@ export function sanitizeSave(raw) {
   };
   for (const f of Object.keys(s.flags)) s.flags[f] = raw.flags?.[f] === true;
   s.enemies = raw.enemies
-    .slice(0, 12)
+    .slice(0, 60)
     .filter(
       (e) =>
         e &&
@@ -84,6 +108,7 @@ export function sanitizeSave(raw) {
   s.picked = Array.isArray(raw.picked)
     ? raw.picked.filter((x) => ["ammo1", "ammo2", "health1"].includes(x))
     : [];
+  stashWeapon(s);
   s.savedAt = num(raw.savedAt, Date.now(), 0, Number.MAX_SAFE_INTEGER);
   return s;
 }
@@ -123,4 +148,21 @@ export function pickZombieActions(state) {
     move: ["Walk_Shuffle", "Walk_Heavy"][Math.floor(random(state) * 2)],
     pace: 0.85 + random(state) * 0.25,
   });
+}
+
+export function freshPrologue(seed) {
+  const s = freshState(seed);
+  s.chapter = 0;
+  s.prologue = newPrologue();
+  s.weapon = null;
+  s.inventory = {};
+  s.player = {
+    position: [-1, 0, 3],
+    yaw: Math.PI,
+    hp: 100,
+    ammo: 0,
+    reserve: 0,
+  };
+  s.cody = { position: [1, 0, 3.5], yaw: Math.PI };
+  return s;
 }

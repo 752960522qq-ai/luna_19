@@ -869,3 +869,86 @@ header button {
     bottom: 34%;
   }
 }
+
+.dialogue-portrait {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 180px;
+  height: 300px;
+  object-fit: contain;
+  object-position: bottom;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 16px #0008);
+}
+#dialogue {
+  padding-left: 190px;
+  min-height: 130px;
+  overflow: visible;
+  background: linear-gradient(110deg, #182526e8, #111d23f5);
+  border-top: 2px solid #edc879;
+}
+#dialogue[data-speaker="may"] {
+  border-color: #93d2d2;
+}
+#weapons {
+  position: fixed;
+  bottom: 17px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 6;
+}
+#weapons button {
+  padding: 8px 14px;
+  background: #18272ce6;
+  border: 1px solid #8fae9c70;
+  border-radius: 8px;
+  color: #e9e6d6;
+  font-size: 12px;
+}
+#weapons .selected {
+  border-color: #f2ce82;
+  color: #f2ce82;
+}
+body:not([data-mode="playing"]) #weapons {
+  display: none;
+}
+@media (max-height: 500px) {
+  .dialogue-portrait {
+    width: 120px;
+    height: 225px;
+  }
+  #dialogue {
+    padding-left: 125px;
+    min-height: 100px;
+  }
+  #weapons {
+    bottom: 8px;
+  }
+}
+
+body[data-cinematic="true"] #hud,
+body[data-dialogue="true"] #hud,
+body[data-cinematic="true"] #weapons,
+body[data-dialogue="true"] #weapons {
+  display: none;
+}
+body[data-cinematic="true"]:before,
+body[data-cinematic="true"]:after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 7vh;
+  background: #0b151a;
+  z-index: 12;
+  pointer-events: none;
+}
+body[data-cinematic="true"]:before {
+  top: 0;
+}
+body[data-cinematic="true"]:after {
+  bottom: 0;
+}

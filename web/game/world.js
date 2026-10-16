@@ -2,7 +2,9 @@ import * as T from "../vendor/three.module.js";
 const v = new T.Vector3();
 export class World {
   constructor(scene) {
-    this.scene = scene;
+    this.host = scene;
+    this.scene = new T.Group();
+    scene.add(this.scene);
     this.solids = [];
     this.effects = [];
     this.pickups = [];
@@ -15,19 +17,24 @@ export class World {
     );
     m.position.set(x, h / 2, z);
     this.scene.add(m);
-    if (solid)
-      this.solids.push(
-        new T.Box3(
-          new T.Vector3(x - w / 2, 0, z - d / 2),
-          new T.Vector3(x + w / 2, h, z + d / 2),
-        ),
+    if (solid) {
+      const box = new T.Box3(
+        new T.Vector3(x - w / 2, 0, z - d / 2),
+        new T.Vector3(x + w / 2, h, z + d / 2),
       );
+      box.surface = [0x8b8063, 0x624630, 0x916c44, 0x594939, 0x9b7547].includes(
+        color,
+      )
+        ? "wood"
+        : "metal";
+      this.solids.push(box);
+    }
     return m;
   }
   make() {
     const s = this.scene;
-    s.background = new T.Color(0x223338);
-    s.fog = new T.Fog(0x223338, 30, 85);
+    this.host.background = new T.Color(0x223338);
+    this.host.fog = new T.Fog(0x223338, 30, 85);
     this.ambient = new T.HemisphereLight(0xd6ebe0, 0x435244, 2.1);
     s.add(this.ambient);
     this.sun = new T.DirectionalLight(0xffd9a0, 3.2);
@@ -208,6 +215,21 @@ export class World {
       }
     }
     return nearest;
+  }
+  impactSound(ray, max = 35) {
+    let key = "wood",
+      nearest = max;
+    for (const b of this.solids) {
+      const hit = ray.intersectBox(b, new T.Vector3());
+      if (hit) {
+        const d = hit.distanceTo(ray.origin);
+        if (d < nearest) {
+          nearest = d;
+          key = b.surface || "wood";
+        }
+      }
+    }
+    return key;
   }
   reset(picked = []) {
     for (const p of this.pickups) p.mesh.visible = !picked.includes(p.id);

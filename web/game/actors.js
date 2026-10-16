@@ -6,6 +6,9 @@ export const STORY_ASSETS = {
   may: "assets/character2_story.glb",
   cody: "assets/cody_story.glb",
   zombie: "assets/zombie_pool.glb",
+  m92: "assets/m92.glb",
+  colt723: "assets/colt723.glb",
+  cabin: "assets/cabin.glb",
 };
 function shadow() {
   const canvas = document.createElement("canvas");
@@ -51,7 +54,7 @@ export async function loadActors(onProgress) {
   for (const [name, url] of Object.entries(STORY_ASSETS)) {
     result[name] = await loader.loadAsync(url, (event) => {
       if (event.total)
-        onProgress?.((done + event.loaded / event.total) / 3, name);
+        onProgress?.((done + event.loaded / event.total) / 6, name);
     });
     let materials = 0,
       textured = 0;
@@ -64,15 +67,21 @@ export async function loadActors(onProgress) {
           if (material.map?.image?.width > 0) textured++;
         }
     });
-    if (!materials || textured !== materials)
+    if (
+      ["may", "cody", "zombie"].includes(name) &&
+      (!materials || textured !== materials)
+    )
       throw Error(name + " 的颜色贴图未能读取，请重试");
     done++;
-    onProgress?.(done / 3, name);
+    onProgress?.(done / 6, name);
   }
   return result;
 }
 export class Actor {
-  constructor(asset, kind, scene) {
+  constructor(asset, kind, scene, equipment = null) {
+    this.equipment = equipment;
+    this.weapon = "m92";
+    this.armed = true;
     this.kind = kind;
     this.scene = scene;
     this.root = new T.Group();
@@ -92,7 +101,8 @@ export class Actor {
     this.current = "";
     this.shadow = shadow();
     scene.add(this.shadow);
-    this.gun = kind === "zombie" ? null : gun();
+    this.gun = kind === "zombie" ? null : new T.Group();
+    if (this.gun) this.setWeapon("m92");
     if (this.gun) scene.add(this.gun);
     this.hand = null;
     this.model.traverse((o) => {
@@ -154,7 +164,56 @@ export class Actor {
           ),
         );
       }
+      // The uploaded Pistol Idle is a low-ready stance, not an eye-level aim.
+      // Keep it as PistolReady; use the already retargeted raised-arm Aim for firing.
+      this.actions.set("PistolReady", this.actions.get("PistolAim"));
+      this.actions.set(
+        "PistolAim",
+        this.mixer.clipAction(
+          new T.AnimationClip("PistolAimRaised", aim.duration, aim.tracks),
+        ),
+      );
+      const pistol = aim;
+      if (pistol)
+        this.actions.set(
+          "PistolUpper",
+          this.mixer.clipAction(
+            new T.AnimationClip(
+              "PistolUpper",
+              pistol.duration,
+              pistol.tracks.filter((t) => upper(t.name)),
+            ),
+          ),
+        );
     }
+  }
+  setWeapon(id) {
+    this.weapon = id;
+    this.current = "";
+    if (!this.gun) return;
+    this.gun.clear();
+    const asset = this.equipment?.[id];
+    if (!asset) {
+      this.gun.add(gun());
+      return;
+    }
+    const model = clone(asset.scene);
+    model.rotation.y = -Math.PI / 2;
+    model.updateMatrixWorld(true);
+    const box = new T.Box3().setFromObject(model),
+      size = box.getSize(new T.Vector3());
+    model.scale.multiplyScalar(
+      (id === "m92" ? 0.23 : 0.86) / Math.max(size.x, size.y, size.z),
+    );
+    model.updateMatrixWorld(true);
+    const fit = new T.Box3().setFromObject(model),
+      center = fit.getCenter(new T.Vector3());
+    model.position.set(
+      -center.x,
+      -fit.min.y - (id === "m92" ? 0.1 : 0.16),
+      -center.z + (id === "m92" ? 0.07 : 0.19),
+    );
+    this.gun.add(model);
   }
   get position() {
     return this.root.position;
@@ -184,18 +243,31 @@ export class Actor {
       if (this.current !== "AimWalk") {
         for (const a of this.actions.values()) a.stop();
         this.actions.get("RunLower").reset().play();
-        this.actions.get("AimUpper").reset().play();
+        this.actions
+          .get(this.weapon === "m92" ? "PistolUpper" : "AimUpper")
+          .reset()
+          .play();
         this.current = "AimWalk";
       }
       this.actions.get("RunLower").timeScale = Math.max(0.3, speed / 3.1);
     } else {
-      this.play(aim ? "Aim" : moving ? "Run" : "Idle");
+      this.play(
+        aim
+          ? this.weapon === "m92"
+            ? "PistolAim"
+            : "Aim"
+          : moving
+            ? "Run"
+            : this.armed && this.weapon === "m92"
+              ? "PistolReady"
+              : "Idle",
+      );
       if (moving && !aim)
         this.actions.get("Run").timeScale = Math.max(0.4, speed / 3.1);
     }
     this.mixer.update(dt);
     this.correctGround();
-    if (this.gun) this.gun.visible = !talk;
+    if (this.gun) this.gun.visible = this.armed && !talk;
   }
   correctGround() {
     if (!this.feet?.length) return;
@@ -235,7 +307,7 @@ export class Actor {
     );
   }
   muzzle() {
-    const p = new T.Vector3(0, 0.015, 0.56);
+    const p = new T.Vector3(0, 0.015, this.weapon === "m92" ? 0.19 : 0.62);
     return this.gun
       ? this.gun.localToWorld(p)
       : this.position.clone().add(new T.Vector3(0, 1.2, 0));
@@ -248,12 +320,5 @@ export class Actor {
     this.shadow.geometry.dispose();
     this.shadow.material.map.dispose();
     this.shadow.material.dispose();
-    if (this.gun)
-      this.gun.traverse((o) => {
-        if (o.isMesh) {
-          o.geometry.dispose();
-          o.material.dispose();
-        }
-      });
   }
 }

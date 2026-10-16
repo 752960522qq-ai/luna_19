@@ -1,0 +1,23 @@
+[
+  {
+    "source": "m92_lowpoly_gun.glb",
+    "sha256": "df983a95c3c63645c75c9dedf94b2c3714f17712cc869c0bbaac0804f5be4c84",
+    "output": "m92.glb",
+    "outputBytes": 184948,
+    "maxTextureSize": 1024
+  },
+  {
+    "source": "delta_car-15.glb",
+    "sha256": "ed24f6b152a6c626ddf1bb452fac4093ce0f08ec5c8dfbac1d8639481c5d9ba0",
+    "output": "colt723.glb",
+    "outputBytes": 7888860,
+    "maxTextureSize": 1024
+  },
+  {
+    "source": "log_cabin.glb",
+    "sha256": "c5eac267825ca2eed63f12b205c4af9402b5bd9325668fc7887044127cb4e240",
+    "output": "cabin.glb",
+    "outputBytes": 9859964,
+    "maxTextureSize": 1024
+  }
+]

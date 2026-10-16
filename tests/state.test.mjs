@@ -59,7 +59,7 @@ test("corrupt saves are rejected and malformed numeric fields are bounded", () =
   ];
   const clean = sanitizeSave(state);
   assert.equal(clean.player.hp, 100);
-  assert.equal(clean.player.ammo, 12);
+  assert.equal(clean.player.ammo, 15);
   assert.equal(clean.enemies.length, 0);
 });
 test("storage failure is reported without destroying current game state", () => {

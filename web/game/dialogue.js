@@ -1,7 +1,8 @@
+import { VOICE_IDS } from "./voice-lines.js";
 export const DIALOGUES = {
   intro: [
-    ["may", "这地方为什么像个巨型老鼠笼？科迪，你给我喝的到底是什么？"],
-    ["cody", "只是“缩小烦恼”的特调。放心，小梅，我会一直帮着你的。"],
+    ["may", "回海口怎么还要穿过这座仓库？这地方简直像个巨型老鼠笼。"],
+    ["cody", "回海口之前，先走这条捷径。放心，小梅，我会一直帮着你的。"],
     ["may", "先找出口。还有——别再碰那些写着“危险”的按钮。"],
     ["cody", "当然。当然。我最擅长的就是安全。先去前面的配电台吧。"],
   ],
@@ -35,7 +36,8 @@ export const DIALOGUES = {
   ],
 };
 export class Dialogue {
-  constructor(onEnd) {
+  constructor(onEnd, audio) {
+    this.audio = audio;
     this.lines = [];
     this.index = 0;
     this.onEnd = onEnd;
@@ -43,6 +45,7 @@ export class Dialogue {
     document.getElementById("dialogue-next").onclick = () => this.next();
   }
   start(lines, done) {
+    this.audio?.stopVoice();
     this.lines = lines;
     this.index = 0;
     this.done = done;
@@ -57,6 +60,9 @@ export class Dialogue {
   }
   draw() {
     const line = this.lines[this.index];
+    this.audio?.speak(line[1], line[2] || VOICE_IDS[line[1]], line[0]);
+    const portrait = document.getElementById("dialogue-portrait");
+    if (portrait) portrait.src = `assets/portraits/${line[0]}.png`;
     document.getElementById("speaker").textContent =
       line[0] === "may" ? "小梅" : "科迪";
     document.getElementById("dialogue-text").textContent = line[1];
@@ -66,6 +72,7 @@ export class Dialogue {
   }
   next() {
     if (!this.active) return;
+    this.audio?.stopVoice();
     this.index++;
     if (this.index < this.lines.length) this.draw();
     else {
@@ -78,6 +85,7 @@ export class Dialogue {
     }
   }
   clear() {
+    this.audio?.stopVoice();
     this.lines = [];
     this.done = null;
     document.getElementById("dialogue").hidden = true;

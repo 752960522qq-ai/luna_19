@@ -22,7 +22,7 @@ public final class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
-        settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setMediaPlaybackRequiresUserGesture(false); // Game start is a user gesture; dialogue advances must play immediately offline.
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         web.setWebViewClient(new WebViewClient(){
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -32,7 +32,7 @@ public final class MainActivity extends Activity {
                 if(path.contains(".."))return response(403,"Forbidden","text/plain",new ByteArrayInputStream(new byte[0]),0);
                 try {
                     InputStream stream=getAssets().open(path.substring(1));
-                    String type=path.endsWith(".js")?"application/javascript":path.endsWith(".css")?"text/css":path.endsWith(".glb")?"model/gltf-binary":path.endsWith(".html")?"text/html":"application/octet-stream";
+                    String type=path.endsWith(".js")?"application/javascript":path.endsWith(".css")?"text/css":path.endsWith(".glb")?"model/gltf-binary":path.endsWith(".html")?"text/html":path.endsWith(".mp3")?"audio/mpeg":path.endsWith(".png")?"image/png":path.endsWith(".json")?"application/json":"application/octet-stream";
                     return response(200,"OK",type,stream,stream.available());
                 } catch(IOException e){return response(404,"Not Found","text/plain",new ByteArrayInputStream(new byte[0]),0);}
             }

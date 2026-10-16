@@ -34,7 +34,13 @@ const server = http.createServer((req, res) => {
         ? "text/html"
         : file.endsWith(".css")
           ? "text/css"
-          : "model/gltf-binary",
+          : file.endsWith(".mp3")
+            ? "audio/mpeg"
+            : file.endsWith(".json")
+              ? "application/json"
+              : file.endsWith(".png")
+                ? "image/png"
+                : "model/gltf-binary",
   );
   fs.createReadStream(file).pipe(res);
 });
@@ -68,17 +74,48 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => window.lunaGame?.ready, {
       timeout: 120000,
     });
+    await page.evaluate(() => {
+      const g = lunaGame;
+      g.renderer.setPixelRatio(0.65);
+      g.resize();
+      g.qaRender = g.renderer.render.bind(g.renderer);
+      g.renderer.render = () => {};
+    });
     console.log("MENU", await page.evaluate(() => lunaGame.debugState));
-    await page.screenshot({ path: path.join(output, "story-menu.png") });
-    await page.click("#new-game");
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-menu.png"),
+    });
+    // Chapter one regression starts directly; the new-game prologue has its own suite.
+    await page.evaluate(async () => {
+      const { freshState } = await import("./game/state.js");
+      const g = lunaGame;
+      const s = freshState();
+      s.flags.intro = true;
+      g.start(s);
+      g.spawnEnemy(-5, -8);
+      g.spawnEnemy(6, -10);
+      const { DIALOGUES } = await import("./game/dialogue.js");
+      g.dialogue.start(DIALOGUES.intro);
+    });
     await page.waitForFunction(() => lunaGame.dialogue.active);
-    await page.screenshot({ path: path.join(output, "story-dialogue.png") });
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-dialogue.png"),
+    });
     for (let i = 0; i < 4; i++) await page.click("#dialogue-next");
     await page.waitForFunction(() => !lunaGame.dialogue.active);
     assert.equal(
       (await page.evaluate(() => lunaGame.debugState)).mode,
       "playing",
     );
+    await page.locator("#joystick").waitFor({ state: "visible" });
     const joystick = await page.locator("#joystick").boundingBox();
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Input.dispatchTouchEvent", {
@@ -110,11 +147,23 @@ const server = http.createServer((req, res) => {
     await page.keyboard.down("KeyW");
     await page.waitForTimeout(600);
     await page.keyboard.up("KeyW");
-    await page.screenshot({ path: path.join(output, "story-playing.png") });
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-playing.png"),
+    });
     console.log("PLAYING", await page.evaluate(() => lunaGame.debugState));
     await page.click("#aim");
     await page.waitForTimeout(500);
-    await page.screenshot({ path: path.join(output, "story-aim.png") });
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-aim.png"),
+    });
     await page.evaluate(() => {
       lunaGame.input.aim = false;
       lunaGame.may.position.set(0, 0, -3.5);
@@ -123,7 +172,13 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => lunaGame.dialogue.active);
     for (let i = 0; i < 4; i++) await page.click("#dialogue-next");
     await page.waitForTimeout(500);
-    await page.screenshot({ path: path.join(output, "story-zombies.png") });
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-zombies.png"),
+    });
     const choices = await page.evaluate(() =>
       lunaGame.enemies.map((e) => [e.id, { ...e.choices }]),
     );
@@ -139,7 +194,13 @@ const server = http.createServer((req, res) => {
     );
     assert.deepEqual(restored, choices);
     console.log("RESTORE stable actions PASS");
-    await page.screenshot({ path: path.join(output, "story-loaded.png") }); // Aimed shots use the same camera ray and enemy hit tests as the fire button.
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-loaded.png"),
+    }); // Aimed shots use the same camera ray and enemy hit tests as the fire button.
     const shot = await page.evaluate(() => {
       const g = lunaGame;
       g.input.clear();
@@ -233,9 +294,21 @@ const server = http.createServer((req, res) => {
     while (await page.evaluate(() => lunaGame.dialogue.active))
       await page.click("#dialogue-next");
     assert.equal(await page.evaluate(() => lunaGame.mode), "complete");
-    await page.screenshot({ path: path.join(output, "story-complete.png") });
+    await page.evaluate(() =>
+      lunaGame.qaRender(lunaGame.scene, lunaGame.camera),
+    );
+    await page.screenshot({
+      timeout: 120000,
+      path: path.join(output, "story-complete.png"),
+    });
     console.log("CHAPTER COMPLETE PASS");
-    await page.evaluate(() => lunaGame.startNew());
+    await page.evaluate(async () => {
+      const { freshState } = await import("./game/state.js");
+      const s = freshState();
+      s.flags.intro = true;
+      lunaGame.start(s);
+      lunaGame.save();
+    });
     while (await page.evaluate(() => lunaGame.dialogue.active))
       await page.click("#dialogue-next");
     await page.evaluate(() => lunaGame.damagePlayer(200));

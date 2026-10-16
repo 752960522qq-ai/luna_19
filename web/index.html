@@ -19,7 +19,7 @@
         <div class="eyebrow"><span></span>一场不太可靠的合作</div>
         <h1>双人<span>成鼠</span><i>DOUBLE TROUBLE, TINY WORLD</i></h1>
         <p class="premise">你负责闯关。<br />科迪负责“帮忙”。</p>
-        <div class="chapter-label">第一章 <b>好心的捷径</b></div>
+        <div class="chapter-label">序章 <b>生日礼物</b></div>
         <button class="primary menu-button" id="new-game">
           开始游戏 <span>↗</span></button
         ><button class="menu-button secondary" id="load-game">
@@ -73,14 +73,37 @@
       </div>
       <div id="ammo">
         <b id="ammo-count">12</b><span id="reserve-count">/ 72</span
-        ><small>鼠胆试射器</small>
+        ><small id="weapon-name">M92 手枪</small>
       </div>
       <button id="interact" class="primary" hidden>互动</button>
       <div class="control-hint">摇杆移动 · 右侧拖动视角 · 瞄准后开火</div>
     </div>
+    <div id="weapons">
+      <button id="weapon-m92">1 · M92</button
+      ><button id="weapon-colt723" hidden>2 · 723</button>
+    </div>
     <div id="toast" hidden></div>
+    <div id="gift-choice" class="modal" hidden>
+      <div class="panel">
+        <span class="eyebrow">科迪的礼物</span>
+        <h2>收下这份“好意”？</h2>
+        <p>礼物似乎能帮你摆脱眼前的困境。至于回礼……科迪还没说。</p>
+        <button id="accept-gift" class="primary">接受</button
+        ><button id="reject-gift" class="secondary">拒绝</button>
+      </div>
+    </div>
+    <div id="prologue-ending" class="modal" hidden>
+      <div class="panel">
+        <span class="eyebrow">序章 / 完成</span>
+        <h2>生日快乐。<br />下一站，海口。</h2>
+        <p id="prologue-kills"></p>
+        <button id="prologue-save" class="secondary">保存进度</button
+        ><button id="next-chapter" class="primary">进入下一章</button
+        ><button id="prologue-menu" class="text-button">返回主菜单</button>
+      </div>
+    </div>
     <section id="dialogue" data-speaker="cody" hidden>
-      <div class="dialogue-avatar"></div>
+      <img id="dialogue-portrait" class="dialogue-portrait" alt="角色立绘" />
       <div class="dialogue-body">
         <div class="dialogue-top">
           <b id="speaker"></b><small id="dialogue-count"></small>
