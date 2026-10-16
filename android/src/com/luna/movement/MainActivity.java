@@ -43,7 +43,9 @@ public final class MainActivity extends Activity {
     }
     private WebResourceResponse response(int code,String reason,String type,InputStream stream,int size){
         Map<String,String> headers=new HashMap<>();headers.put("Content-Length",Integer.toString(size));headers.put("Cache-Control","no-cache");
-        headers.put("Content-Security-Policy","default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:");
+        // GLTFLoader fetches embedded textures through blob URLs with ImageBitmapLoader.
+        // These requests require connect-src permission as well as img-src permission.
+        headers.put("Content-Security-Policy","default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:");
         return new WebResourceResponse(type,type.startsWith("text/")||type.contains("javascript")?"UTF-8":null,code,reason,headers,stream);
     }
     private void immersive(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
