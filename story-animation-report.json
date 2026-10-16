@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Aim",
+    "source": "Rifle Aiming Idle.fbx",
+    "frames": 94,
+    "mappedBones": 22
+  },
+  {
+    "name": "Talk",
+    "source": "Talking(1).fbx",
+    "frames": 119,
+    "mappedBones": 22
+  },
+  {
+    "name": "Aim",
+    "source": "Rifle Aiming Idle.fbx",
+    "frames": 94,
+    "mappedBones": 22
+  },
+  {
+    "name": "Talk",
+    "source": "Talking(1).fbx",
+    "frames": 119,
+    "mappedBones": 22
+  },
+  {
+    "name": "Walk_Heavy",
+    "source": "derived from supplied zombie GLB movement",
+    "timingScale": 1.22
+  },
+  {
+    "name": "Idle_Sway",
+    "source": "Zombie Idle(1).fbx",
+    "frames": 184,
+    "mappedBones": 22
+  },
+  {
+    "name": "Idle_Lurch",
+    "source": "Zombie Idle (1)(1).fbx",
+    "frames": 121,
+    "mappedBones": 22
+  }
+]

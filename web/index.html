@@ -1,9 +1,130 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>Luna 人物移动测试</title><link rel="stylesheet" href="style.css"></head><body>
-<canvas id="view"></canvas>
-<header><div class="brand"><span class="dot"></span>LUNA <small>人物移动测试</small></div><nav><button data-character="cody" class="active">Cody</button><button data-character="character2">角色 2</button></nav><button id="reset">回到起点</button></header>
-<div id="stats"><span id="state">加载中</span><b id="speed">0.0</b> m/s <i></i><span id="fps">— FPS</span></div>
-<div id="crosshair">+</div><div id="hint">左侧摇杆移动 · 右侧拖动视角</div>
-<div id="joystick"><div id="stick"></div></div><div id="lookpad"></div>
-<div id="actions"><button id="preview">原地试跑</button><button id="sprint">疾跑</button></div>
-<div id="loading"><div class="loading-card"><span class="eyebrow">LUNA / MOVEMENT LAB</span><h1>准备出发</h1><p id="loadtext">正在载入角色…</p><div class="track"><div id="progress"></div></div><button id="retry" hidden>重新加载</button></div></div>
-<script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#182326" />
+    <title>双人成鼠</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-mode="loading">
+    <canvas id="view"></canvas>
+    <div id="damage-overlay"></div>
+    <section id="menu" class="screen" hidden>
+      <div class="menu-shade"></div>
+      <div class="menu-content">
+        <div class="eyebrow"><span></span>一场不太可靠的合作</div>
+        <h1>双人<span>成鼠</span><i>DOUBLE TROUBLE, TINY WORLD</i></h1>
+        <p class="premise">你负责闯关。<br />科迪负责“帮忙”。</p>
+        <div class="chapter-label">第一章 <b>好心的捷径</b></div>
+        <button class="primary menu-button" id="new-game">
+          开始游戏 <span>↗</span></button
+        ><button class="menu-button secondary" id="load-game">
+          读取存档 <span>→</span></button
+        ><small id="save-summary"></small>
+        <div class="menu-foot">剧情 / 第三人称射击 <b>玩家 · 小梅</b></div>
+      </div>
+      <div class="character-credit">
+        小梅 & 科迪<br /><span>最熟悉的人，也许最不靠谱。</span>
+      </div>
+    </section>
+    <div id="new-confirm" class="modal" hidden>
+      <div class="panel compact">
+        <span class="eyebrow">重新出发</span>
+        <h2>开始新的冒险？</h2>
+        <p>当前存档将被新游戏覆盖。</p>
+        <button id="confirm-new" class="primary">开始新游戏</button
+        ><button id="cancel-new" class="secondary">保留存档</button>
+      </div>
+    </div>
+    <div id="hud">
+      <header>
+        <div class="health-card">
+          <div class="portrait">梅</div>
+          <div>
+            <div class="health-label">
+              小梅 <span id="health-value">100</span>
+            </div>
+            <div class="health-track"><div id="health-fill"></div></div>
+            <small>科迪 <b>与你同行</b></small>
+          </div>
+        </div>
+        <div id="objective">
+          <span>当前目标</span><strong id="objective-text"></strong
+          ><small id="objective-detail"></small>
+        </div>
+        <button id="pause" aria-label="暂停">Ⅱ</button>
+      </header>
+      <div id="fps">— FPS</div>
+      <div id="reticle"><i></i><b></b><em></em><span></span></div>
+      <div id="marker" hidden>
+        <span class="diamond">◇</span><small id="marker-distance"></small>
+      </div>
+      <div id="lookpad"></div>
+      <div id="joystick"><div id="stick"></div></div>
+      <div id="left-actions"><button id="sprint">疾跑</button></div>
+      <div id="combat-actions">
+        <button id="aim" class="round">瞄准</button
+        ><button id="fire" class="round">开火</button
+        ><button id="reload">换弹</button>
+      </div>
+      <div id="ammo">
+        <b id="ammo-count">12</b><span id="reserve-count">/ 72</span
+        ><small>鼠胆试射器</small>
+      </div>
+      <button id="interact" class="primary" hidden>互动</button>
+      <div class="control-hint">摇杆移动 · 右侧拖动视角 · 瞄准后开火</div>
+    </div>
+    <div id="toast" hidden></div>
+    <section id="dialogue" data-speaker="cody" hidden>
+      <div class="dialogue-avatar"></div>
+      <div class="dialogue-body">
+        <div class="dialogue-top">
+          <b id="speaker"></b><small id="dialogue-count"></small>
+        </div>
+        <p id="dialogue-text"></p>
+      </div>
+      <button id="dialogue-next">继续 <span>→</span></button>
+    </section>
+    <div id="pause-panel" class="modal" hidden>
+      <div class="panel">
+        <div class="eyebrow">双人成鼠 / 暂停</div>
+        <h2>喘口气。<br />别让科迪碰按钮。</h2>
+        <button id="resume" class="primary">继续游戏</button
+        ><button id="save" class="secondary">保存进度</button
+        ><button id="return-menu" class="text-button">保存并返回主菜单</button>
+      </div>
+    </div>
+    <div id="death-panel" class="modal" hidden>
+      <div class="panel">
+        <span class="eyebrow">这次“帮忙”有点过头了</span>
+        <h2>小梅需要休息一下</h2>
+        <p>读取存档，或者从头识破科迪的好意。</p>
+        <button id="death-load" class="primary">读取存档</button
+        ><button id="death-new" class="secondary">重新开始</button>
+      </div>
+    </div>
+    <div id="ending-panel" class="modal" hidden>
+      <div class="panel">
+        <span class="eyebrow">第一章 / 完成</span>
+        <h2>鼠洞之外，<br />还有“好心人”。</h2>
+        <p id="ending-kills"></p>
+        <button id="ending-menu" class="primary">返回主菜单</button
+        ><small>本次版本包含第一章完整试玩流程。</small>
+      </div>
+    </div>
+    <div id="loading" class="modal">
+      <div class="panel loading-panel">
+        <span class="eyebrow">双人成鼠</span>
+        <h2>把胆子带上。</h2>
+        <p id="load-text">正在准备这场合作…</p>
+        <div class="load-track"><div id="load-progress"></div></div>
+        <button id="retry-load" class="secondary" hidden>重试加载</button>
+      </div>
+    </div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

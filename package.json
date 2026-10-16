@@ -1,0 +1,14 @@
+{
+  "name": "double-mice-luna19",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/state.test.mjs",
+    "test:browser": "node tests/story-smoke.cjs",
+    "test:textures": "node scripts/check_textures.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
