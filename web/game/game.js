@@ -195,7 +195,7 @@ export class Game {
   showMenu() {
     this.dialogue.clear();
     this.selectWorld(1);
-    this.may.armed = this.cody.armed = true;
+    this.may.armed = this.cody.armed = false;
     this.setMode("menu");
     const save = this.store.read();
     $("load-game").disabled = !save;

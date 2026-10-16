@@ -1,3 +1,13 @@
+# 0.3.1 — model rig corrections
+
+- Correct the reversed firearm forward axis; set real grip pivots and geometry-derived muzzle positions.
+- Add per-character weapon sizing, two-bone arm IK, wrist alignment and finger grip poses.
+- Keep the aiming pelvis orientation when layering locomotion; reduce sprint leg lift for moving aim.
+- Correct the zombie pelvis / neck basis, retain world-space limb poses and normalize from the corrected reference stance.
+- Ground animated mesh soles instead of ankle joints; stabilize horizontal root drift.
+- Blend animation changes over 140 ms and retire faded actions; use unarmed idle in the menu.
+- Add three tests exercising actual model geometry, skeletons, weapon grips and repeated transitions.
+
 # 0.3.0 — 生日礼物（source only）
 
 - Add cabin prologue, model-based portraits, entrance / door camera cuts and interruptible per-line Cody voice.

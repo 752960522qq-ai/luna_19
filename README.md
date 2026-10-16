@@ -1,6 +1,6 @@
 # 双人成鼠 · Double Trouble, Tiny World
 
-第三人称剧情 / 射击试玩。玩家始终操作小梅，科迪由 AI 控制：他会跟随、协助射击，也会打着“帮忙”的旗号给小梅制造麻烦。基于 Three.js + Android WebView，可离线运行。当前源码版本为 **0.3.0，序章「生日礼物」＋第一章「好心的捷径」**。
+第三人称剧情 / 射击试玩。玩家始终操作小梅，科迪由 AI 控制：他会跟随、协助射击，也会打着“帮忙”的旗号给小梅制造麻烦。基于 Three.js + Android WebView，可离线运行。当前源码版本为 **0.3.1，序章「生日礼物」＋第一章「好心的捷径」**。
 
 ## 序章「生日礼物」
 
@@ -69,8 +69,14 @@ npm run test:prologue
 
 ## Android 外壳
 
-包名 `com.luna.movement`，显示名「双人成鼠」，源码版本 `0.3.0` / code 3。最低 Android 8 / API 26，目标 API 35；横屏，要求 OpenGL ES 3 和可用的 Android System WebView。没有 native `.so`，不依赖 32 位 CPU 运行库；全部资源随包提供，不请求网络权限。
+包名 `com.luna.movement`，显示名「双人成鼠」，源码版本 `0.3.1` / code 4。最低 Android 8 / API 26，目标 API 35；横屏，要求 OpenGL ES 3 和可用的 Android System WebView。没有 native `.so`，不依赖 32 位 CPU 运行库；全部资源随包提供，不请求网络权限。
 
 后续需要打包时，使用 JDK 17、Android Platform 35 / Build Tools 35.0.1，运行 `scripts/build_apk.sh`。可通过 `LUNA_SDK`、`LUNA_BUILD_TOOLS`、`LUNA_JAVAC` 和 `LUNA_KEY` 指定工具及仓库外的开发签名证书。**本次只修改和验证源码，没有生成新 APK。**
 
 所有用户提供的人物和动作资源的权利仍归各自权利人。本工程不替这些资源授予新许可。Three.js 按随附 MIT 许可使用。设备端限制见 `VALIDATION.md`。
+
+## 模型修正（0.3.1）
+
+修正枪械前向、握把枢轴和枪口坐标；小梅和科迪按各自手掌比例适配枪械，用双骨骼手臂 IK 与手腕 / 手指约束完成握持。移动瞄准保留瞄准姿势的骨盆旋转，降低跑步抬腿幅度。丧尸修正导出动作的骨盆、颈部基准，并按修正后的姿态统一尺寸。接地使用蒙皮鞋底采样点，动作以 140 ms 淡入淡出切换。
+
+这些是游戏运行时的骨骼与挂点修正；原始上传模型的拓扑、纹理和蒙皮权重保持原样。`tests/model-rig.test.mjs` 会直接加载实际 GLB 的几何、骨骼和动作检查回归。

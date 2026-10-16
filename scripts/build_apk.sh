@@ -18,6 +18,6 @@ LUNA_KEY="${LUNA_KEY:-/workspace/scratch/466d16a9ce68/source/luna19-test.keystor
 if [ ! -f "$LUNA_KEY" ]; then
  keytool -genkeypair -keystore "$LUNA_KEY" -storepass android -alias luna19test -keypass android -keyalg RSA -keysize 2048 -validity 3650 -dname 'CN=Luna19 Development, O=Luna19, C=CN' >/dev/null 2>&1
 fi
-"$LUNA_BUILD_TOOLS/apksigner" sign --ks "$LUNA_KEY" --ks-key-alias luna19test --ks-pass pass:android --key-pass pass:android --out dist/DoubleMice-0.3.0.apk build/aligned.apk
-"$LUNA_BUILD_TOOLS/apksigner" verify --verbose dist/DoubleMice-0.3.0.apk
-"$LUNA_BUILD_TOOLS/aapt" dump badging dist/DoubleMice-0.3.0.apk | head -12
+"$LUNA_BUILD_TOOLS/apksigner" sign --ks "$LUNA_KEY" --ks-key-alias luna19test --ks-pass pass:android --key-pass pass:android --out dist/DoubleMice-0.3.1.apk build/aligned.apk
+"$LUNA_BUILD_TOOLS/apksigner" verify --verbose dist/DoubleMice-0.3.1.apk
+"$LUNA_BUILD_TOOLS/aapt" dump badging dist/DoubleMice-0.3.1.apk | head -12
