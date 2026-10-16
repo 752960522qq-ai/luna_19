@@ -1,0 +1,12 @@
+{
+  "cody": {
+    "minimum_foot_height": 0.017999673262238503,
+    "maximum_foot_height": 0.018001196905970573,
+    "frames": 22
+  },
+  "character2": {
+    "minimum_foot_height": 0.018000001087784767,
+    "maximum_foot_height": 0.018000245094299316,
+    "frames": 22
+  }
+}

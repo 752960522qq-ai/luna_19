@@ -1,0 +1,18 @@
+[
+  {
+    "character": "cody",
+    "bones": 190,
+    "mapped_bones": 22,
+    "frames": 22,
+    "fps": 30,
+    "file": "/workspace/scratch/466d16a9ce68/luna_19/web/assets/cody_run.glb"
+  },
+  {
+    "character": "character2",
+    "bones": 143,
+    "mapped_bones": 22,
+    "frames": 22,
+    "fps": 30,
+    "file": "/workspace/scratch/466d16a9ce68/luna_19/web/assets/character2_run.glb"
+  }
+]

@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>Luna 人物移动测试</title><link rel="stylesheet" href="style.css"></head><body>
+<canvas id="view"></canvas>
+<header><div class="brand"><span class="dot"></span>LUNA <small>人物移动测试</small></div><nav><button data-character="cody" class="active">Cody</button><button data-character="character2">角色 2</button></nav><button id="reset">回到起点</button></header>
+<div id="stats"><span id="state">加载中</span><b id="speed">0.0</b> m/s <i></i><span id="fps">— FPS</span></div>
+<div id="crosshair">+</div><div id="hint">左侧摇杆移动 · 右侧拖动视角</div>
+<div id="joystick"><div id="stick"></div></div><div id="lookpad"></div>
+<div id="actions"><button id="preview">原地试跑</button><button id="sprint">疾跑</button></div>
+<div id="loading"><div class="loading-card"><span class="eyebrow">LUNA / MOVEMENT LAB</span><h1>准备出发</h1><p id="loadtext">正在载入角色…</p><div class="track"><div id="progress"></div></div><button id="retry" hidden>重新加载</button></div></div>
+<script type="module" src="app.js"></script></body></html>
