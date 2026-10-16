@@ -1,3 +1,20 @@
+# Rifle locomotion / Cody correction — source validation
+
+No APK was generated for this update. Android device validation remains outstanding.
+
+- `npm test`: 13 tests pass, including six sampled phases per rifle clip for both real skinned characters, sole contact, torso height, muzzle direction, both-hand support and weapon/dialogue selection.
+- Companion tests cover identical/overlapping positions, alternate free sides, fully blocked corrections and thin-wall path sampling.
+- `tests/rifle-smoke.cjs`: eight actual textured pose renders; overlapping Cody/player positions separate to at least 1.05 m; zero page errors.
+- `tests/story-smoke.cjs`: original chapter progression, input, hits, reload, save/load and death/load pass.
+- `tests/prologue-smoke.cjs`: tutorial, gift branches, sixty-enemy ending and next chapter pass.
+- `scripts/check_textures.cjs`: both characters, zombie, both guns and cabin pass.
+- Original nodes, meshes, skins, materials, images and animations compare unchanged against the preceding revision; original binary data is preserved. New animation channels are appended.
+- Cody GLB: 27,236,392 bytes. May GLB: 26,454,540 bytes.
+
+Visual inspection uses the real renderer and textures, including comparison with Cody's supplied RestPose and original Run. This corrects player/companion overlap and unsupported rifle running; it does not replace the supplied character mesh or add facial animation. Flat-floor sole correction is not uneven-terrain foot IK.
+
+## Previous 0.3.1 validation (historical)
+
 # 双人成鼠 0.3.1 — source validation
 
 A signed APK is built for this change. Validation uses Chromium with the exact response CSP extracted from the Android host.

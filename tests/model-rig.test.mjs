@@ -144,3 +144,30 @@ test("animation transitions retire faded actions and remain finite under repeate
     a.remove();
   }
 });
+test('uploaded rifle idle/run select only when armed and keep both hands supported throughout loops',()=>{
+ for(const kind of ['may','cody']){
+  const a=new Actor(assets[kind],kind,new T.Scene(),assets);a.setWeapon('colt723');a.armed=true;
+  for(const moving of [false,true]){
+   for(let i=0;i<20;i++){a.animate(1/30,{moving,speed:3.1});a.updateGun();}
+   const name=moving?'RifleRun':'RifleIdle';assert.equal(a.current,name);
+   const action=a.actions.get(name);assert(action.getClip().duration>.5);
+   for(const phase of [0,.15,.3,.5,.75,.99]){
+    action.time=action.getClip().duration*phase;a.mixer.update(0);a.correctGround();a.updateGun();
+    assert(Math.abs(soleHeight(a)-.012)<.004);
+    const head=a.head.getWorldPosition(vector()),hip=a.hip.getWorldPosition(vector());
+    assert(head.y-hip.y>(kind==='cody'?.5:.25),kind+' folded rifle pose');
+    const forward=a.gun.getWorldDirection(vector());assert(forward.z>.9,'rifle points backward');
+    for(const side of ['right','left']){
+     const arm=a.rig.arms[side],palm=arm.hand.getWorldPosition(vector()).addScaledVector(forward,arm.palmLocal*arm.hand.getWorldScale(vector()).x);
+     const support=a.gun.position.clone().addScaledVector(forward,side==='left'?(kind==='cody'?.2:.16):0);
+     assert(palm.distanceTo(support)<.16,kind+' '+side+' detached support '+palm.distanceTo(support));
+    }
+   }
+  }
+  a.armed=false;a.animate(.2,{});assert.equal(a.current,'Idle');
+  a.animate(.2,{moving:true});assert.equal(a.current,'Run');
+  a.armed=true;a.setWeapon('m92');a.animate(.2,{});assert.equal(a.current,'PistolReady');
+  a.setWeapon('colt723');a.animate(.2,{talk:true});assert.equal(a.current,'Talk');assert(!a.gun.visible);
+  a.remove();
+ }
+});

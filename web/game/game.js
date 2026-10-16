@@ -1,4 +1,5 @@
 import { AudioSystem } from "./audio.js";
+import { separateCompanion } from "./companions.js";
 import { CabinWorld } from "./cabin.js";
 import { Prologue } from "./prologue.js";
 import {
@@ -158,8 +159,8 @@ export class Game {
           "…";
       });
       for (const [kind, names] of [
-        ["may", ["Idle", "Run", "Aim", "PistolAim", "Talk"]],
-        ["cody", ["Idle", "Run", "Aim", "PistolAim", "Talk"]],
+        ["may", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
+        ["cody", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
         ["zombie", ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"]],
       ]) {
         for (const n of names)
@@ -719,6 +720,10 @@ export class Game {
     this.camera.updateProjectionMatrix();
   }
   updateCody(dt) {
+    separateCompanion(
+      this.may.position, this.cody.position,
+      (position, dx, dz) => this.world.move(position, dx, dz),
+    );
     let nearest = null,
       distance = Infinity;
     for (const e of this.live()) {
@@ -751,6 +756,10 @@ export class Game {
         angleDelta(this.cody.yaw, Math.atan2(delta.x, delta.z)) *
         Math.min(1, dt * 8);
     }
+    moving = separateCompanion(
+      this.may.position, this.cody.position,
+      (position, dx, dz) => this.world.move(position, dx, dz),
+    ) || moving;
     const aiming =
       this.cody.armed &&
       nearest &&

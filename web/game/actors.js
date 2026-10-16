@@ -355,13 +355,17 @@ export class Actor {
             ? "PistolAim"
             : "Aim"
           : moving
-            ? "Run"
-            : this.armed && this.weapon === "m92"
-              ? "PistolReady"
+            ? this.armed && this.weapon === "colt723"
+              ? "RifleRun"
+              : "Run"
+            : this.armed
+              ? this.weapon === "m92"
+                ? "PistolReady"
+                : "RifleIdle"
               : "Idle",
       );
       if (moving && !aim)
-        this.actions.get("Run").timeScale = Math.max(0.4, speed / 3.1);
+        this.actions.get(this.current).timeScale = Math.max(0.4, speed / 3.1);
     }
     this.mixer.update(dt);
     this.correctGround();
@@ -457,7 +461,7 @@ export class Actor {
     this.root.updateMatrixWorld(true);
     const forward = new T.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
     const arm = this.rig?.arms.right;
-    if (arm && (!this.moving || this.aiming)) {
+    if (arm && (!this.moving || this.aiming || this.weapon === "colt723")) {
       const shoulder = arm.upper.getWorldPosition(new T.Vector3());
       const left =
         this.rig.arms.left?.upper.getWorldPosition(new T.Vector3()) || shoulder;

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "RifleIdle",
+    "source": "Rifle Idle.fbx",
+    "frames": 240,
+    "mappedBones": 22,
+    "character": "cody"
+  },
+  {
+    "name": "RifleRun",
+    "source": "Rifle Run.fbx",
+    "frames": 21,
+    "mappedBones": 22,
+    "character": "cody"
+  },
+  {
+    "name": "RifleIdle",
+    "source": "Rifle Idle.fbx",
+    "frames": 240,
+    "mappedBones": 22,
+    "character": "may"
+  },
+  {
+    "name": "RifleRun",
+    "source": "Rifle Run.fbx",
+    "frames": 21,
+    "mappedBones": 22,
+    "character": "may"
+  }
+]

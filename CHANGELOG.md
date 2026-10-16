@@ -1,3 +1,13 @@
+# Unreleased — rifle locomotion and Cody overlap correction (source only)
+
+- Retarget the uploaded Rifle Idle / Rifle Run FBX clips to both May and Cody as RifleIdle / RifleRun.
+- Select the new poses for an armed Colt 723; preserve pistol, unarmed, aiming and dialogue states.
+- Maintain both hands on the rifle during running instead of attaching it to a freely swinging right hand.
+- Use a two-frame seam for the 21-frame rifle run, preserving the authored gait.
+- Separate Cody from May during following and after overlapping saves; sample collision corrections in small steps and try alternate free sides near walls.
+- Preserve existing mesh, skin, texture and animation data; character GLBs remain within 20–30 MB.
+- No APK generated.
+
 # 0.3.1 — model rig corrections
 
 - Correct the reversed firearm forward axis; set real grip pivots and geometry-derived muzzle positions.

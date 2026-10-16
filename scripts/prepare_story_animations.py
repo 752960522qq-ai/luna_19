@@ -27,7 +27,7 @@ def minz(meshes):
   e.to_mesh_clear()
  return z
 
-def retarget(target,meshes,mapping,fbx,name):
+def retarget(target,meshes,mapping,fbx,name,loop_blend=8):
  # The source clips are Mixamo rigs. Align limb rest directions, preserving target roll.
  keep=set(bpy.data.objects);saved=set(bpy.data.actions)
  target.animation_data.action=None
@@ -66,13 +66,13 @@ def retarget(target,meshes,mapping,fbx,name):
   hip.location=(target.matrix_world.to_3x3()@target.data.bones[hip.name].matrix_local.to_3x3()).inverted()@Vector((0,0,.018-z));hip.keyframe_insert('location',frame=i+1,group=hip.name)
  for fc in action.fcurves:
   for k in fc.keyframe_points:k.interpolation='LINEAR'
- # Blend clip endpoints over 10 samples so the authored gestures loop without a jump.
+ # Short locomotion cycles need a shorter seam than long idle gestures.
  for fc in action.fcurves:
   ks=fc.keyframe_points
-  if len(ks)>12:
+  if loop_blend and len(ks)>loop_blend+4:
    first=ks[0].co.y
-   for i in range(1,9):
-    k=ks[-i];a=(9-i)/8;k.co.y=k.co.y*(1-a)+first*a
+   for i in range(1,loop_blend+1):
+    k=ks[-i];a=(loop_blend+1-i)/loop_blend;k.co.y=k.co.y*(1-a)+first*a
  for o in list(bpy.data.objects):
   if o not in keep:bpy.data.objects.remove(o,do_unlink=True)
  for a in list(bpy.data.actions):
