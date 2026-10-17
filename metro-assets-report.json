@@ -1,0 +1,274 @@
+[
+  {
+    "id": "male00",
+    "file": "npc_male00.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_0",
+    "meshes": 8,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male01",
+    "file": "npc_male01.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_1",
+    "meshes": 7,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male02",
+    "file": "npc_male02.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_10",
+    "meshes": 9,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male03",
+    "file": "npc_male03.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_2",
+    "meshes": 9,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male04",
+    "file": "npc_male04.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_3",
+    "meshes": 9,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male05",
+    "file": "npc_male05.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_4",
+    "meshes": 7,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male06",
+    "file": "npc_male06.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_5",
+    "meshes": 7,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male07",
+    "file": "npc_male07.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_6",
+    "meshes": 7,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male08",
+    "file": "npc_male08.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_7",
+    "meshes": 12,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male09",
+    "file": "npc_male09.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_8",
+    "meshes": 7,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "male10",
+    "file": "npc_male10.glb",
+    "source": "male_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_9",
+    "meshes": 15,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "d3e4aabfc70d865526b48a3afa9de211a9fb11a27c1177f00b6cd1968529cca7",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female00",
+    "file": "npc_female00.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_0",
+    "meshes": 10,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female01",
+    "file": "npc_female01.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_1",
+    "meshes": 11,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female02",
+    "file": "npc_female02.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_2",
+    "meshes": 10,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female03",
+    "file": "npc_female03.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_3",
+    "meshes": 10,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female04",
+    "file": "npc_female04.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_4",
+    "meshes": 10,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "female05",
+    "file": "npc_female05.glb",
+    "source": "female_citizen_dafuq.glb",
+    "sourceRig": "GLTF_created_5",
+    "meshes": 10,
+    "bones": 57,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run"
+    ],
+    "sourceSha256": "a6d03c9ec5c19ba348206c2563669cd4f7657ec64fedd066d9bd8f33e961ca24",
+    "maxTextureSize": 512
+  },
+  {
+    "id": "guard",
+    "file": "npc_guard.glb",
+    "source": "security_guard__rigged_3d_model.glb",
+    "sourceRig": "Object_4",
+    "meshes": 3,
+    "bones": 66,
+    "clips": [
+      "Idle",
+      "Walk",
+      "Run",
+      "PistolAim",
+      "Aim"
+    ],
+    "sourceSha256": "66c38d108409438851f6f7051cf3e29957dfa93d43123a9228645449956e47b7",
+    "maxTextureSize": 512
+  }
+]

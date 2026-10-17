@@ -1,3 +1,6 @@
+import { MetroWorld } from "./metro-world.js";
+import { Metro } from "./metro.js";
+import { METRO_TITLE, NPC_MODELS } from "./metro-state.js";
 import { AudioSystem } from "./audio.js";
 import { separateCompanion } from "./companions.js";
 import { CabinWorld } from "./cabin.js";
@@ -44,6 +47,22 @@ export class Game {
     this.world = this.warehouse;
     this.cabin = new CabinWorld(this.scene);
     this.prologue = new Prologue(this);
+    this.metroWorld = new MetroWorld(this.scene);
+    this.metro = new Metro(this);
+    this.metroWorld.entities = () =>
+      [
+        {
+          position: this.may?.position,
+          radius: 0.33,
+          hp: this.state?.player.hp,
+        },
+        { position: this.cody?.position, radius: 0.33, hp: 100 },
+        ...this.enemies.map((e) => ({
+          position: e.actor.position,
+          radius: 0.3,
+          hp: e.hp,
+        })),
+      ].filter((e) => e.position);
     this.audio = new AudioSystem();
     this.input = new Input();
     this.store = new SaveStore();
@@ -117,6 +136,11 @@ export class Game {
     $("interact").onclick = () => this.interact();
     $("death-load").onclick = () => this.loadGame();
     $("death-new").onclick = () => this.startNew();
+    $("chapter-two").onclick = () => this.metro.start(this.snapshot());
+    $("metro-save").onclick = () => this.save(true);
+    $("metro-menu").onclick = () => this.showMenu();
+    $("metro-retry").onclick = () => this.metro.start(this.snapshot());
+    $("metro-fail-menu").onclick = () => this.showMenu();
     $("ending-menu").onclick = () => this.showMenu();
     $("retry-load").onclick = () => this.init();
     addEventListener("keydown", (e) => {
@@ -149,7 +173,7 @@ export class Game {
         $("load-progress").style.width = Math.round(p * 100) + "%";
         $("load-text").textContent =
           "正在准备" +
-          {
+          ({
             may: "小梅",
             cody: "科迪",
             zombie: "丧尸",
@@ -157,14 +181,23 @@ export class Game {
             m92: "M92",
             colt723: "柯尔特 723",
             cabin: "木屋",
-          }[name] +
+          }[name] || name) +
           "…";
       });
       for (const [kind, names] of [
-        ["may", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
-        ["cody", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
+        [
+          "may",
+          ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"],
+        ],
+        [
+          "cody",
+          ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"],
+        ],
         ["zombie", ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"]],
-        ["zombieShirt", ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"]],
+        [
+          "zombieShirt",
+          ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"],
+        ],
       ]) {
         for (const n of names)
           if (!this.assets[kind].animations.some((a) => a.name === n))
@@ -173,6 +206,7 @@ export class Game {
       this.may = new Actor(this.assets.may, "may", this.scene, this.assets);
       this.cody = new Actor(this.assets.cody, "cody", this.scene, this.assets);
       this.cabin.fitExterior(this.assets.cabin);
+      this.metroWorld.fit(this.assets.metroStation, this.assets.money);
       this.ready = true;
       $("loading").hidden = true;
       this.showMenu();
@@ -184,6 +218,8 @@ export class Game {
   }
   setMode(mode) {
     this.mode = mode;
+    $("metro-ending").hidden = mode !== "metro-complete";
+    $("metro-failed").hidden = mode !== "metro-failed";
     $("prologue-ending").hidden = mode !== "prologue-complete";
     if (mode !== "playing") {
       this.audio?.stop();
@@ -204,15 +240,17 @@ export class Game {
     const save = this.store.read();
     $("load-game").disabled = !save;
     $("save-summary").textContent = save
-      ? `${save.chapter === 0 ? PROLOGUE_TITLE : CHAPTER} · ${new Date(save.savedAt).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}`
+      ? `${save.chapter === 0 ? PROLOGUE_TITLE : save.chapter === 2 ? METRO_TITLE : CHAPTER} · ${new Date(save.savedAt).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}`
       : this.store.error || "暂无存档，开始一段不太可靠的合作";
     this.may.position.set(1, 0, 7.8);
     this.cody.position.set(3.3, 0, 8.2);
     this.may.yaw = 0.55;
     this.cody.yaw = -0.35;
     this.world.reset();
-    for (const e of this.enemies)
+    for (const e of this.enemies) {
       e.actor.root.visible = e.actor.shadow.visible = false;
+      if (e.actor.gun) e.actor.gun.visible = false;
+    }
   }
   startNew() {
     if (!this.ready) return;
@@ -222,9 +260,15 @@ export class Game {
     this.prologue.resume();
   }
   selectWorld(chapter) {
-    this.warehouse.scene.visible = chapter !== 0;
+    this.warehouse.scene.visible = chapter === 1;
+    this.metroWorld.scene.visible = chapter === 2;
     this.cabin.scene.visible = chapter === 0;
-    this.world = chapter === 0 ? this.cabin : this.warehouse;
+    this.world =
+      chapter === 0
+        ? this.cabin
+        : chapter === 2
+          ? this.metroWorld
+          : this.warehouse;
     this.scene.background = new T.Color(chapter === 0 ? 0x73867d : 0x223338);
     this.scene.fog = new T.Fog(chapter === 0 ? 0x73867d : 0x223338, 30, 85);
   }
@@ -271,7 +315,8 @@ export class Game {
     }
     this.audio.unlock().catch(console.warn);
     this.start(saved);
-    if (saved.chapter === 0) this.prologue.resume();
+    if (saved.chapter === 2) this.metro.resume();
+    else if (saved.chapter === 0) this.prologue.resume();
     else if (!saved.flags.intro)
       this.dialogue.start(DIALOGUES.intro, () => {
         this.state.flags.intro = true;
@@ -284,8 +329,17 @@ export class Game {
     this.enemies = [];
     this.state = state;
     this.selectWorld(state.chapter);
+    document.querySelector(".chapter-label").textContent =
+      state.chapter === 0
+        ? PROLOGUE_TITLE
+        : state.chapter === 2
+          ? METRO_TITLE
+          : CHAPTER;
     this.world.reset(state.picked);
-    if (state.chapter === 0 && ["combat", "offer", "ending", "complete"].includes(state.prologue.phase))
+    if (
+      state.chapter === 0 &&
+      ["combat", "offer", "ending", "complete"].includes(state.prologue.phase)
+    )
       this.cabin.breakDoor();
     this.may.setWeapon(state.weapon || "m92");
     this.cody.setWeapon("m92");
@@ -300,6 +354,11 @@ export class Game {
     }
     for (const data of state.enemies)
       this.spawnEnemy(data.position[0], data.position[2], data);
+    if (state.chapter === 2) {
+      this.metroWorld.ensureInside(this.may.position);
+      this.metroWorld.ensureInside(this.cody.position);
+      this.metroWorld.syncMoney(state.metro.drops);
+    }
     this.yaw = state.player.yaw - Math.PI;
     this.pitch = 0.16;
     this.speed =
@@ -363,10 +422,39 @@ export class Game {
   }
   spawnEnemy(x, z, saved = null) {
     const choices = saved
-      ? Object.freeze({ idle: saved.idle, move: saved.move, pace: saved.pace, model: saved.model === "shirt" ? "shirt" : "flesh" })
+      ? Object.freeze({
+          idle: saved.idle,
+          move: saved.move,
+          pace: saved.pace,
+          model: NPC_MODELS.includes(saved.model)
+            ? saved.model
+            : saved.model === "shirt"
+              ? "shirt"
+              : "flesh",
+          ...(NPC_MODELS.includes(saved.model)
+            ? {
+                role: saved.model === "guard" ? "guard" : "citizen",
+                cash: saved.cash || 1000,
+              }
+            : {}),
+        })
       : pickZombieActions(this.state);
-    const actor = new Actor(choices.model === "shirt" ? this.assets.zombieShirt : this.assets.zombie, "zombie", this.scene);
-    actor.position.set(x, this.state.chapter === 0 ? this.cabin.heightAt(x,z) : 0, z);
+    const asset = NPC_MODELS.includes(choices.model)
+      ? this.assets[choices.model]
+      : choices.model === "shirt"
+        ? this.assets.zombieShirt
+        : this.assets.zombie;
+    const actor = new Actor(
+      asset,
+      choices.model === "guard" ? "guard" : "zombie",
+      this.scene,
+      this.assets,
+    );
+    actor.position.set(
+      x,
+      this.state.chapter === 0 ? this.cabin.heightAt(x, z) : 0,
+      z,
+    );
     actor.yaw = saved?.yaw ?? random(this.state) * Math.PI * 2;
     const enemy = {
       id: saved?.id || "z" + ++this.state.spawnSerial,
@@ -379,6 +467,7 @@ export class Game {
     };
     actor.play(choices.idle, true);
     this.enemies.push(enemy);
+    if (this.state.chapter === 2) this.metroWorld.ensureInside(actor.position);
     return enemy;
   }
   live() {
@@ -393,7 +482,7 @@ export class Game {
     this.toastLeft = 4;
   }
   objectiveTarget() {
-    if (this.state.chapter === 0) return null;
+    if (this.state.chapter === 0 || this.state.chapter === 2) return null;
     return this.state.stage === 0
       ? new T.Vector3(0, 0, -3.7)
       : this.state.stage === 2
@@ -406,6 +495,10 @@ export class Game {
   }
   interact() {
     if (this.mode !== "playing" || this.dialogue.active) return;
+    if (this.state.chapter === 2) {
+      this.metro.interact();
+      return;
+    }
     const target = this.objectiveTarget();
     if (!target || this.may.position.distanceTo(target) > 2.5) return;
     if (this.state.stage === 0) {
@@ -576,6 +669,7 @@ export class Game {
       listener: this.may.position,
     });
     if (enemy.hp === 0) {
+      if (this.state.chapter === 2) this.metro.drop(enemy);
       enemy.deadTime = 0;
       enemy.deathY = enemy.actor.position.y;
       if (this.state.chapter === 0) this.state.prologue.defeated++;
@@ -657,6 +751,11 @@ export class Game {
     });
     this.updateCamera(dt, aiming);
     this.may.updateGun(this.aimRay().at(25, new T.Vector3()));
+    this.may.applyReload(
+      this.reloadLeft > 0
+        ? 1 - this.reloadLeft / WEAPONS[this.state.weapon].reload
+        : null,
+    );
     if (this.input.fire) this.fire();
     for (const pickup of this.world.pickups) {
       if (
@@ -731,12 +830,14 @@ export class Game {
   }
   updateCody(dt) {
     separateCompanion(
-      this.may.position, this.cody.position,
+      this.may.position,
+      this.cody.position,
       (position, dx, dz) => this.world.move(position, dx, dz),
     );
     let nearest = null,
       distance = Infinity;
     for (const e of this.live()) {
+      if (this.state.chapter === 2 && e.choices.role !== "guard") continue;
       const d = e.actor.position.distanceTo(this.cody.position);
       if (d < distance) {
         distance = d;
@@ -766,10 +867,12 @@ export class Game {
         angleDelta(this.cody.yaw, Math.atan2(delta.x, delta.z)) *
         Math.min(1, dt * 8);
     }
-    moving = separateCompanion(
-      this.may.position, this.cody.position,
-      (position, dx, dz) => this.world.move(position, dx, dz),
-    ) || moving;
+    moving =
+      separateCompanion(
+        this.may.position,
+        this.cody.position,
+        (position, dx, dz) => this.world.move(position, dx, dz),
+      ) || moving;
     const aiming =
       this.cody.armed &&
       nearest &&
@@ -822,7 +925,8 @@ export class Game {
       if (e.hp <= 0) {
         e.deadTime += dt;
         e.actor.root.rotation.x = Math.min(Math.PI / 2, e.deadTime * 2.5);
-        e.actor.position.y = (e.deathY || 0) - Math.max(0, e.deadTime - 0.6) * 0.6;
+        e.actor.position.y =
+          (e.deathY || 0) - Math.max(0, e.deadTime - 0.6) * 0.6;
         if (e.deadTime > 1.6) {
           e.actor.remove();
           this.enemies.splice(i, 1);
@@ -835,7 +939,10 @@ export class Game {
       const alert = d < (this.state.flags.alarm ? 24 : 9);
       if (alert && d > 1.25) {
         if (this.world.chaseTarget)
-          delta.copy(this.world.chaseTarget(e.actor.position, this.may.position)).sub(e.actor.position).setY(0);
+          delta
+            .copy(this.world.chaseTarget(e.actor.position, this.may.position))
+            .sub(e.actor.position)
+            .setY(0);
         delta.normalize();
         let dx = delta.x,
           dz = delta.z;
@@ -910,7 +1017,7 @@ export class Game {
       this.dialogue.start(DIALOGUES.cleared);
     }
   }
-  update(dt) {
+  update(dt, elapsed = dt) {
     if (
       this.state.chapter === 0 &&
       !this.dialogue.active &&
@@ -921,7 +1028,7 @@ export class Game {
     }
     this.cooldown = Math.max(0, this.cooldown - dt);
     this.damageCooldown = Math.max(0, (this.damageCooldown || 0) - dt);
-    if (this.reloadLeft > 0) {
+    if (this.reloadLeft > 0 && !this.dialogue.active) {
       this.reloadLeft -= dt;
       if (this.reloadLeft <= 0) {
         const n = Math.min(
@@ -948,7 +1055,8 @@ export class Game {
     } else {
       this.updatePlayer(dt);
       this.updateCody(dt);
-      this.updateEnemies(dt);
+      if (this.state.chapter === 2) this.metro.update(dt, elapsed);
+      else this.updateEnemies(dt);
       this.blackoutLeft = Math.max(0, this.blackoutLeft - dt);
       this.autosave += dt;
       if (this.autosave > 15) this.save();
@@ -970,6 +1078,10 @@ export class Game {
     $("reserve-count").textContent = "/ " + p.reserve;
     $("reload").textContent = this.reloadLeft > 0 ? "装填中…" : "换弹";
     $("reload").disabled = this.reloadLeft > 0;
+    if (this.state.chapter === 2) {
+      this.metro.hud();
+      return;
+    }
     if (this.state.chapter === 0) {
       this.prologue.hud();
       return;
@@ -1009,7 +1121,8 @@ export class Game {
   }
   frame() {
     requestAnimationFrame(() => this.frame());
-    const dt = Math.min(this.clock.getDelta(), 0.05);
+    const elapsed = this.clock.getDelta();
+    const dt = Math.min(elapsed, 0.05);
     this.time += dt;
     document.body.dataset.cinematic = String(
       this.mode === "playing" &&
@@ -1018,7 +1131,7 @@ export class Game {
     );
     document.body.dataset.dialogue = String(this.dialogue.active);
     if (this.ready) {
-      if (this.mode === "playing") this.update(dt);
+      if (this.mode === "playing") this.update(dt, elapsed);
       else if (this.mode === "menu") {
         this.may.animate(dt, { talk: false });
         this.cody.animate(dt, { talk: true });
@@ -1058,6 +1171,7 @@ export class Game {
       mode: this.mode,
       chapter: this.state.chapter,
       prologue: this.state.prologue,
+      metro: this.state.metro,
       weapon: this.state.weapon,
       stage: this.state.stage,
       player: { ...this.state.player, position: this.may?.position.toArray() },

@@ -1,3 +1,4 @@
+import { sanitizeMetro, NPC_MODELS } from "./metro-state.js";
 import { newPrologue, sanitizePrologue } from "./prologue-state.js";
 import { WEAPONS, stashWeapon } from "./weapons.js";
 export const SAVE_KEY = "double-mice.save.v1";
@@ -17,7 +18,7 @@ const vec = (v, d = [0, 0, 7]) =>
     : d.slice();
 export function freshState(seed = Date.now() >>> 0) {
   return {
-    version: 2,
+    version: 3,
     chapter: 1,
     weapon: "m92",
     inventory: { m92: { ammo: 12, reserve: 72 } },
@@ -43,16 +44,17 @@ export function freshState(seed = Date.now() >>> 0) {
 export function sanitizeSave(raw) {
   if (
     !raw ||
-    ![1, 2].includes(raw.version) ||
-    ![0, 1].includes(raw.chapter) ||
+    ![1, 2, 3].includes(raw.version) ||
+    ![0, 1, 2].includes(raw.chapter) ||
     !raw.player ||
     !raw.cody ||
     !Array.isArray(raw.enemies)
   )
     throw Error("存档格式不兼容");
   const s = freshState();
-  s.version = 2;
+  s.version = 3;
   s.chapter = raw.chapter;
+  s.metro = raw.chapter === 2 ? sanitizeMetro(raw.metro) : null;
   s.prologue = raw.chapter === 0 ? sanitizePrologue(raw.prologue) : null;
   s.weapon = WEAPONS[raw.weapon]
     ? raw.weapon
@@ -93,8 +95,8 @@ export function sanitizeSave(raw) {
         e &&
         typeof e.id === "string" &&
         e.hp > 0 &&
-        ["Idle_Sway", "Idle_Lurch"].includes(e.idle) &&
-        ["Walk_Shuffle", "Walk_Heavy"].includes(e.move),
+        ["Idle_Sway", "Idle_Lurch", "Idle"].includes(e.idle) &&
+        ["Walk_Shuffle", "Walk_Heavy", "Walk"].includes(e.move),
     )
     .map((e) => ({
       id: e.id.slice(0, 50),
@@ -103,9 +105,25 @@ export function sanitizeSave(raw) {
       hp: num(e.hp, 100, 1, 100),
       idle: e.idle,
       move: e.move,
-      model: e.model === "shirt" ? "shirt" : "flesh",
+      model: NPC_MODELS.includes(e.model)
+        ? e.model
+        : e.model === "shirt"
+          ? "shirt"
+          : "flesh",
+      ...(NPC_MODELS.includes(e.model)
+        ? {
+            role: e.model === "guard" ? "guard" : "citizen",
+            cash: num(e.cash, 1000, 1000, 5000) | 0,
+          }
+        : {}),
       pace: num(e.pace, 1, 0.7, 1.3),
     }));
+  if (s.metro)
+    s.enemies = s.enemies.filter(
+      (e) =>
+        !s.metro.looted.includes(e.id) &&
+        !s.metro.drops.some((d) => d.id === e.id),
+    );
   s.picked = Array.isArray(raw.picked)
     ? raw.picked.filter((x) => ["ammo1", "ammo2", "health1"].includes(x))
     : [];
@@ -148,7 +166,7 @@ export function pickZombieActions(state) {
     idle: ["Idle_Sway", "Idle_Lurch"][Math.floor(random(state) * 2)],
     move: ["Walk_Shuffle", "Walk_Heavy"][Math.floor(random(state) * 2)],
     pace: 0.85 + random(state) * 0.25,
-    model: random(state) < .5 ? "flesh" : "shirt",
+    model: random(state) < 0.5 ? "flesh" : "shirt",
   });
 }
 

@@ -1,0 +1,11 @@
+{
+  "source": "abandoned_underground_train_station.glb",
+  "sourceSha256": "b19fd5d072c40abc8117d58a8fb954e0a1d6f99d75cfba0c456202b07687892d",
+  "outputBytes": 26448532,
+  "maxTextureSize": 1024,
+  "optimizer": "gltfpack 0.20 -kn -km -ke -vp 16 -vt 16",
+  "geometrySimplification": false,
+  "extensionsRequired": [
+    "KHR_mesh_quantization"
+  ]
+}

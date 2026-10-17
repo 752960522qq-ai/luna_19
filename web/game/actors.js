@@ -1,3 +1,5 @@
+import { poseRifleReload } from "./rifle-reload.js";
+import { NPC_MODELS } from "./metro-state.js";
 import { CharacterRig, stabilizeZombie } from "./rig.js";
 import * as T from "../vendor/three.module.js";
 import { GLTFLoader } from "../vendor/GLTFLoader.js";
@@ -11,6 +13,11 @@ export const STORY_ASSETS = {
   m92: "assets/m92.glb",
   colt723: "assets/colt723.glb",
   cabin: "assets/cabin.glb",
+  metroStation: "assets/metro_station.glb",
+  money: "assets/money.glb",
+  ...Object.fromEntries(
+    NPC_MODELS.map((id) => [id, "assets/npc_" + id + ".glb"]),
+  ),
 };
 function shadow() {
   const canvas = document.createElement("canvas");
@@ -56,7 +63,11 @@ export async function loadActors(onProgress) {
   for (const [name, url] of Object.entries(STORY_ASSETS)) {
     result[name] = await loader.loadAsync(url, (event) => {
       if (event.total)
-        onProgress?.((done + event.loaded / event.total) / Object.keys(STORY_ASSETS).length, name);
+        onProgress?.(
+          (done + event.loaded / event.total) /
+            Object.keys(STORY_ASSETS).length,
+          name,
+        );
     });
     let materials = 0,
       textured = 0;
@@ -82,7 +93,10 @@ export async function loadActors(onProgress) {
 export class Actor {
   constructor(asset, kind, scene, equipment = null) {
     this.equipment = equipment;
-    this.authoredZombie = kind === "zombie" && asset.scene.userData.zombieRigVersion >= 2;
+    this.authoredZombie =
+      kind === "zombie" &&
+      (asset.scene.userData.zombieRigVersion >= 2 ||
+        asset.animations.some((c) => c.name === "Walk"));
     this.weapon = "m92";
     this.armed = true;
     this.kind = kind;
@@ -119,7 +133,7 @@ export class Actor {
     this.model.traverse((o) => {
       if (!o.isBone) return;
       if (
-        (kind === "cody" && o.name === "RightHand") ||
+        ((kind === "cody" || kind === "guard") && o.name === "RightHand") ||
         (kind === "may" && o.name === "arm_right_wrist")
       )
         this.hand = o;
@@ -156,7 +170,12 @@ export class Actor {
           return [b, q];
         });
     }
-    this.play(kind === "zombie" ? "Idle_Lurch" : "Idle", true);
+    this.play(
+      kind === "zombie" && this.actions.has("Idle_Lurch")
+        ? "Idle_Lurch"
+        : "Idle",
+      true,
+    );
     this.mixer.update(0);
     this.root.updateMatrixWorld(true);
     if (kind === "zombie" && !this.authoredZombie) stabilizeZombie(this);
@@ -456,7 +475,12 @@ export class Actor {
     }
   }
   updateGun(target) {
-    this.shadow.position.set(this.position.x, this.position.y + 0.025, this.position.z);
+    this.shadow.position.set(
+      this.position.x,
+      this.position.y + 0.025,
+      this.position.z,
+    );
+    if (this.reloadMagazine) this.reloadMagazine.visible = false;
     if (!this.gun) return;
     this.gun.visible = this.armed && !this.talking;
     if (!this.gun.visible) return;
@@ -531,6 +555,12 @@ export class Actor {
         );
     }
   }
+  applyReload(progress) {
+    this.reloadProgress = progress;
+    if (this.reloadMagazine) this.reloadMagazine.visible = false;
+    if (this.weapon === "colt723" && progress != null && this.gun?.visible)
+      poseRifleReload(this, progress);
+  }
   muzzle() {
     return this.gun
       ? this.gun.localToWorld(
@@ -542,6 +572,11 @@ export class Actor {
   remove() {
     this.scene.remove(this.root, this.shadow);
     if (this.gun) this.scene.remove(this.gun);
+    if (this.reloadMagazine) {
+      this.scene.remove(this.reloadMagazine);
+      this.reloadMagazine.geometry.dispose();
+      this.reloadMagazine.material.dispose();
+    }
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.model);
     this.shadow.geometry.dispose();
