@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as T from '../web/vendor/three.module.js';
+import {CabinWorld} from '../web/game/cabin.js';
+import {modelFixture} from './helpers/model-fixtures.mjs';
+const asset=await modelFixture('cabin');
+test('the supplied cabin is the playable interior and its real entrance breaks open',()=>{
+ const w=new CabinWorld(new T.Scene());w.fitExterior(asset);
+ assert.equal(w.physics.length,11);assert(w.door.children.length>=2);assert(w.wallGrid.size>100);
+ assert(w.physics.every(m=>m.material.clippingPlanes.length===1));
+ w.setCutaway(false);assert(w.physics.every(m=>m.material.clippingPlanes.length===0));
+ w.setCutaway(true);assert(w.physics.every(m=>m.material.clippingPlanes.length===1));
+ assert(w.valid(1,-1));assert(w.valid(3,0));
+ const p=new T.Vector3(0,0,-6.8);
+ for(let i=0;i<60;i++)w.move(p,0,-.05);
+ assert(p.z>-7.8,'closed door must block the player');
+ w.breakDoor();assert(!w.door.visible);
+ const zombie=new T.Vector3(0,0,-9.5);
+ for(let i=0;i<150;i++)w.move(zombie,0,.03);
+ assert(zombie.z>-5.1,'spawned zombies must pass through the actual doorway');
+ const wall=new T.Vector3(0,0,-3);
+ w.move(wall,20,0);assert(wall.x<6,'long moves must not tunnel through model walls');
+ const legacy=new T.Vector3(1,0,7);w.ensureInside(legacy);assert(w.valid(legacy.x,legacy.z));
+ w.reset();assert(w.door.visible);assert(w.solids.includes(w.doorSolid));
+});

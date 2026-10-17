@@ -44,6 +44,7 @@ export async function characterFixtures() {
     may: "character2_story",
     cody: "cody_story",
     zombie: "zombie_pool",
+    zombieShirt: "zombie_shirt",
     m92: "m92",
     colt723: "colt723",
   }))

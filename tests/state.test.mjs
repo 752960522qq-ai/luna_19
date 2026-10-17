@@ -23,6 +23,7 @@ test("spawned zombie action choices survive saved game round trip", () => {
   assert(picks.every(Object.isFrozen));
   assert(new Set(picks.map((p) => p.idle)).size === 2);
   assert(new Set(picks.map((p) => p.move)).size === 2);
+  assert(new Set(picks.map((p) => p.model)).size === 2);
   state.stage = 1;
   state.flags.intro = true;
   state.enemies = picks.map((p, i) => ({

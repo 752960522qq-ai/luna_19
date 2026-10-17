@@ -27,7 +27,7 @@ def minz(meshes):
   e.to_mesh_clear()
  return z
 
-def retarget(target,meshes,mapping,fbx,name,loop_blend=8):
+def retarget(target,meshes,mapping,fbx,name,loop_blend=8,align_body=False,head_reference=None):
  # The source clips are Mixamo rigs. Align limb rest directions, preserving target roll.
  keep=set(bpy.data.objects);saved=set(bpy.data.actions)
  target.animation_data.action=None
@@ -37,6 +37,8 @@ def retarget(target,meshes,mapping,fbx,name,loop_blend=8):
  bpy.ops.import_scene.fbx(filepath=PROJECT+'/models/animations/'+SOURCE_NAMES[fbx])
  source=next(o for o in bpy.data.objects if o not in keep and o.type=='ARMATURE')
  srcaction=source.animation_data.action;start,end=map(int,srcaction.frame_range)
+ bpy.context.scene.frame_set(start)
+ source_head=(source.matrix_world@source.pose.bones['mixamorig:Head'].matrix).to_quaternion()
  print('CLIP',name,start,end,flush=True)
  srest={b.name:(source.matrix_world@b.matrix_local).to_quaternion() for b in source.data.bones}
  spos={b.name:source.matrix_world@b.head_local for b in source.data.bones}
@@ -48,6 +50,12 @@ def retarget(target,meshes,mapping,fbx,name,loop_blend=8):
   if src.endswith(('Arm','ForeArm','UpLeg','Leg')):
    nxt=src.replace('ForeArm','Hand') if src.endswith('ForeArm') else src.replace('UpLeg','Leg') if src.endswith('UpLeg') else src.replace('Arm','ForeArm') if src.endswith('Arm') else src.replace('Leg','Foot')
    if nxt in mapping:align=(tpos[mapping[nxt]]-tpos[tgt]).rotation_difference(spos['mixamorig:'+nxt]-spos[sb])
+  elif align_body:
+   # End markers are not reliable anatomical up vectors in imported rigs.
+   # Preserve head bind roll; align the chain through the neck / head joint.
+   nxt={'Hips':'Spine','Spine':'Spine1','Spine1':'Spine2','Spine2':'Neck','Neck':'Head','LeftFoot':'LeftToeBase','RightFoot':'RightToeBase'}.get(src)
+   if nxt in mapping and 'mixamorig:'+nxt in spos:
+    align=(tpos[mapping[nxt]]-tpos[tgt]).rotation_difference(spos['mixamorig:'+nxt]-spos[sb])
   corrections[tgt]=srest[sb].inverted()@align@rest[tgt]
  action=bpy.data.actions.new(name);target.animation_data.action=action;reverse={v:k for k,v in mapping.items() if v in corrections}
  # Sample at 30 fps; cap long source clips to 8 seconds for mobile size.
@@ -58,6 +66,8 @@ def retarget(target,meshes,mapping,fbx,name,loop_blend=8):
    parent=b.parent;pq=desired[parent.name] if parent else Quaternion();pr=rest[parent.name] if parent else Quaternion();pb=target.pose.bones[b.name]
    if b.name in reverse:
     sb='mixamorig:'+reverse[b.name];q=(source.matrix_world@source.pose.bones[sb].matrix).to_quaternion()@corrections[b.name]
+    if head_reference is not None and reverse[b.name]=='Head':
+     q=(source.matrix_world@source.pose.bones[sb].matrix).to_quaternion()@source_head.inverted()@head_reference
    else:q=pq@pr.inverted()@rest[b.name]
    desired[b.name]=q
    if b.name in reverse:

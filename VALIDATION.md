@@ -1,3 +1,19 @@
+# Supplied cabin / zombie variants / Cody materials — source validation
+
+No APK is generated for this update. Validation is desktop Chromium / software WebGL plus real GLB geometry tests; Android device validation remains outstanding.
+
+- `npm test`: 16 tests pass. The two zombie models each exercise four clips at 41 phases (328 skinned poses), checking visible head geometry above the neck, body height, floor contact, spine alignment and foot lift. Movement continuity is additionally checked over 120 steps, including the loop seam, with no foot jump above 9 cm per sampled step.
+- `tests/assets-scene-smoke.cjs`: 27 actual textured renders cover Cody's idle / talk / run / aim, both zombies' four actions, cabin exterior / interior and the horde. Ten enemies include both models; they enter through the real doorway and preserve model / action choices on reload. Zero page errors.
+- `tests/cabin.test.mjs`: original mesh-derived walls, real door extraction, closed-door blocking, broken-door passage, long-move wall blocking and legacy-position relocation pass.
+- `tests/prologue-smoke.cjs`: movement / firing / reload tutorial, interruptible voice, gift rejection / save-load, acceptance / 300 rounds, total 60 enemies, ending and next chapter pass.
+- `tests/story-smoke.cjs`: chapter-one input, ray hit, ammo / reload, progression, action restore and death / load pass.
+- `scripts/check_textures.cjs`: both protagonists, both zombie models, M92, Colt 723 and cabin pass under the Android host CSP.
+- Cody's eight source materials are tested as opaque. The original cabin GLB remains unchanged; the runtime keeps its original geometry / UVs / textures, extracting only the breakable door triangles and clipping upper floors for visibility.
+
+The supplied Zombie Idle files are idle gestures. Movement uses the supplied Running(2).fbx leg cycle, retargeted and adapted to a shorter, slower zombie stride with an idle upper body; Walk_Heavy is a timing variant of the same baked motion. No separate zombie walking FBX was supplied. Two distinct supplied zombie appearances are used; identical uploaded copies are deduplicated. The static shirt model receives fitted bones and weights in the authoring script.
+
+## Prior source validation (historical)
+
 # Rifle locomotion / Cody correction — source validation
 
 No APK was generated for this update. Android device validation remains outstanding.

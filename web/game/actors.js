@@ -7,6 +7,7 @@ export const STORY_ASSETS = {
   may: "assets/character2_story.glb",
   cody: "assets/cody_story.glb",
   zombie: "assets/zombie_pool.glb",
+  zombieShirt: "assets/zombie_shirt.glb",
   m92: "assets/m92.glb",
   colt723: "assets/colt723.glb",
   cabin: "assets/cabin.glb",
@@ -55,7 +56,7 @@ export async function loadActors(onProgress) {
   for (const [name, url] of Object.entries(STORY_ASSETS)) {
     result[name] = await loader.loadAsync(url, (event) => {
       if (event.total)
-        onProgress?.((done + event.loaded / event.total) / 6, name);
+        onProgress?.((done + event.loaded / event.total) / Object.keys(STORY_ASSETS).length, name);
     });
     let materials = 0,
       textured = 0;
@@ -69,18 +70,19 @@ export async function loadActors(onProgress) {
         }
     });
     if (
-      ["may", "cody", "zombie"].includes(name) &&
+      ["may", "cody", "zombie", "zombieShirt"].includes(name) &&
       (!materials || textured !== materials)
     )
       throw Error(name + " 的颜色贴图未能读取，请重试");
     done++;
-    onProgress?.(done / 6, name);
+    onProgress?.(done / Object.keys(STORY_ASSETS).length, name);
   }
   return result;
 }
 export class Actor {
   constructor(asset, kind, scene, equipment = null) {
     this.equipment = equipment;
+    this.authoredZombie = kind === "zombie" && asset.scene.userData.zombieRigVersion >= 2;
     this.weapon = "m92";
     this.armed = true;
     this.kind = kind;
@@ -133,7 +135,7 @@ export class Actor {
       if (/(?:Left|Right)Arm(?:_\d+)?$/.test(o.name)) this.zombieArms.push(o);
       if (/(?:Left|Right)UpLeg(?:_\d+)?$/.test(o.name)) this.upperLegs.push(o);
     });
-    if (kind === "zombie") {
+    if (kind === "zombie" && !this.authoredZombie) {
       this.play("Walk_Shuffle", true);
       this.actions.get("Walk_Shuffle").time =
         asset.animations.find((c) => c.name === "Walk_Shuffle").duration * 0.25;
@@ -157,7 +159,7 @@ export class Actor {
     this.play(kind === "zombie" ? "Idle_Lurch" : "Idle", true);
     this.mixer.update(0);
     this.root.updateMatrixWorld(true);
-    if (kind === "zombie") stabilizeZombie(this);
+    if (kind === "zombie" && !this.authoredZombie) stabilizeZombie(this);
     const bounds = new T.Box3().setFromObject(this.model, true),
       scale =
         (kind === "zombie" ? 1.85 : 1.8) /
@@ -424,7 +426,7 @@ export class Actor {
       }
     }
     if (!this.feet?.length) return;
-    if (this.kind === "zombie") stabilizeZombie(this);
+    if (this.kind === "zombie" && !this.authoredZombie) stabilizeZombie(this);
     this.root.updateMatrixWorld(true);
     if (this.hip) {
       const p = this.hip.getWorldPosition(new T.Vector3());
@@ -454,7 +456,7 @@ export class Actor {
     }
   }
   updateGun(target) {
-    this.shadow.position.set(this.position.x, 0.025, this.position.z);
+    this.shadow.position.set(this.position.x, this.position.y + 0.025, this.position.z);
     if (!this.gun) return;
     this.gun.visible = this.armed && !this.talking;
     if (!this.gun.visible) return;

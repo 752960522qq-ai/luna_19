@@ -35,6 +35,7 @@ export class Game {
     });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     this.renderer.outputColorSpace = T.SRGBColorSpace;
+    this.renderer.localClippingEnabled = true;
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.scene = new T.Scene();
@@ -152,6 +153,7 @@ export class Game {
             may: "小梅",
             cody: "科迪",
             zombie: "丧尸",
+            zombieShirt: "衬衫丧尸",
             m92: "M92",
             colt723: "柯尔特 723",
             cabin: "木屋",
@@ -162,6 +164,7 @@ export class Game {
         ["may", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
         ["cody", ["Idle", "Run", "RifleIdle", "RifleRun", "Aim", "PistolAim", "Talk"]],
         ["zombie", ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"]],
+        ["zombieShirt", ["Idle_Sway", "Idle_Lurch", "Walk_Shuffle", "Walk_Heavy"]],
       ]) {
         for (const n of names)
           if (!this.assets[kind].animations.some((a) => a.name === n))
@@ -281,6 +284,9 @@ export class Game {
     this.enemies = [];
     this.state = state;
     this.selectWorld(state.chapter);
+    this.world.reset(state.picked);
+    if (state.chapter === 0 && ["combat", "offer", "ending", "complete"].includes(state.prologue.phase))
+      this.cabin.breakDoor();
     this.may.setWeapon(state.weapon || "m92");
     this.cody.setWeapon("m92");
     this.may.armed = this.cody.armed = !!state.weapon;
@@ -288,6 +294,10 @@ export class Game {
     this.may.yaw = state.player.yaw;
     this.cody.position.fromArray(state.cody.position);
     this.cody.yaw = state.cody.yaw;
+    if (state.chapter === 0) {
+      this.cabin.ensureInside(this.may.position);
+      this.cabin.ensureInside(this.cody.position);
+    }
     for (const data of state.enemies)
       this.spawnEnemy(data.position[0], data.position[2], data);
     this.yaw = state.player.yaw - Math.PI;
@@ -302,7 +312,6 @@ export class Game {
     this.input.sprint = false;
     $("aim").classList.remove("selected");
     $("sprint").classList.remove("selected");
-    this.world.reset(state.picked);
     this.world.battery.mesh.visible = state.stage === 2;
     this.world.setExit(state.stage >= 4);
     this.dialogue.clear();
@@ -354,10 +363,10 @@ export class Game {
   }
   spawnEnemy(x, z, saved = null) {
     const choices = saved
-      ? Object.freeze({ idle: saved.idle, move: saved.move, pace: saved.pace })
+      ? Object.freeze({ idle: saved.idle, move: saved.move, pace: saved.pace, model: saved.model === "shirt" ? "shirt" : "flesh" })
       : pickZombieActions(this.state);
-    const actor = new Actor(this.assets.zombie, "zombie", this.scene);
-    actor.position.set(x, 0, z);
+    const actor = new Actor(choices.model === "shirt" ? this.assets.zombieShirt : this.assets.zombie, "zombie", this.scene);
+    actor.position.set(x, this.state.chapter === 0 ? this.cabin.heightAt(x,z) : 0, z);
     actor.yaw = saved?.yaw ?? random(this.state) * Math.PI * 2;
     const enemy = {
       id: saved?.id || "z" + ++this.state.spawnSerial,
@@ -568,6 +577,7 @@ export class Game {
     });
     if (enemy.hp === 0) {
       enemy.deadTime = 0;
+      enemy.deathY = enemy.actor.position.y;
       if (this.state.chapter === 0) this.state.prologue.defeated++;
       this.audio.play("zombie6", {
         volume: 0.3,
@@ -812,7 +822,7 @@ export class Game {
       if (e.hp <= 0) {
         e.deadTime += dt;
         e.actor.root.rotation.x = Math.min(Math.PI / 2, e.deadTime * 2.5);
-        e.actor.position.y = -Math.max(0, e.deadTime - 0.6) * 0.6;
+        e.actor.position.y = (e.deathY || 0) - Math.max(0, e.deadTime - 0.6) * 0.6;
         if (e.deadTime > 1.6) {
           e.actor.remove();
           this.enemies.splice(i, 1);
@@ -824,6 +834,8 @@ export class Game {
       const d = delta.length();
       const alert = d < (this.state.flags.alarm ? 24 : 9);
       if (alert && d > 1.25) {
+        if (this.world.chaseTarget)
+          delta.copy(this.world.chaseTarget(e.actor.position, this.may.position)).sub(e.actor.position).setY(0);
         delta.normalize();
         let dx = delta.x,
           dz = delta.z;

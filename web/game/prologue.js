@@ -20,7 +20,7 @@ export class Prologue {
   resume() {
     const g = this.g,
       p = this.p;
-    g.world.exterior.visible = p.phase === "entrance";
+    g.world.setCutaway(p.phase !== "entrance");
     g.may.armed = g.cody.armed = [
       "combat",
       "offer",
@@ -111,18 +111,18 @@ export class Prologue {
       this.cinematic -= dt;
       const t = 1 - this.cinematic / 3.5;
       if (t < 0.35) {
-        g.world.exterior.visible = true;
-        g.camera.position.set(15 - t * 5, 9, -8);
-        g.camera.lookAt(0, 3, -22);
+        g.world.setCutaway(false);
+        g.camera.position.set(18 - t * 5, 13, -24);
+        g.camera.lookAt(-1.6, 4, -3.4);
       } else {
-        g.world.exterior.visible = false;
-        g.camera.position.set(Math.sin(t * 1.5) * 4, 1.8 + t * 0.8, 6 - t * 3);
-        g.camera.lookAt(0, 1.1, 2.5);
+        g.world.setCutaway(true);
+        g.camera.position.set(3.5, 2.7, 1.1 - t);
+        g.camera.lookAt(1.8, 1.1, -2);
       }
       g.may.animate(dt, { moving: t < 0.65, speed: 1.8 });
       g.cody.animate(dt, { moving: t < 0.65, speed: 1.8 });
-      g.may.position.z = 3.8 - t * 1.3;
-      g.cody.position.z = 4.2 - t * 1.3;
+      g.may.position.z = -0.4 - t * 1.3;
+      g.cody.position.z = 0.1 - t * 1.3;
       g.may.updateGun();
       g.cody.updateGun();
       if (this.cinematic <= 0) this.birthday();

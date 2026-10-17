@@ -14,7 +14,7 @@ const policy = java.match(
 )?.[1];
 assert(policy, "APK security policy not found");
 const probe = `import {GLTFLoader} from '/vendor/GLTFLoader.js';
-window.textureProbe=async name=>{const gltf=await new GLTFLoader().loadAsync('/assets/'+({cody:'cody_story',character2:'character2_story',zombie:'zombie_pool',m92:'m92',colt723:'colt723',cabin:'cabin'}[name])+'.glb');let materials=0,textured=0,broken=0;gltf.scene.traverse(o=>{if(o.isMesh)for(const m of (Array.isArray(o.material)?o.material:[o.material])){materials++;for(const k of ["map","normalMap","roughnessMap","metalnessMap","aoMap","emissiveMap"])if(m[k]&&!(m[k].image?.width>0))broken++;if(m.map&&m.map.image&&m.map.image.width>0)textured++;}});return {materials,textured,broken};};`;
+window.textureProbe=async name=>{const gltf=await new GLTFLoader().loadAsync('/assets/'+({cody:'cody_story',character2:'character2_story',zombie:'zombie_pool',zombieShirt:'zombie_shirt',m92:'m92',colt723:'colt723',cabin:'cabin'}[name])+'.glb');let materials=0,textured=0,broken=0;gltf.scene.traverse(o=>{if(o.isMesh)for(const m of (Array.isArray(o.material)?o.material:[o.material])){materials++;for(const k of ["map","normalMap","roughnessMap","metalnessMap","aoMap","emissiveMap"])if(m[k]&&!(m[k].image?.width>0))broken++;if(m.map&&m.map.image&&m.map.image.width>0)textured++;}});return {materials,textured,broken};};`;
 (async () => {
   const server = http.createServer((req, res) => {
     res.setHeader("Content-Security-Policy", policy);
@@ -58,6 +58,7 @@ window.textureProbe=async name=>{const gltf=await new GLTFLoader().loadAsync('/a
       "cody",
       "character2",
       "zombie",
+      "zombieShirt",
       "m92",
       "colt723",
       "cabin",
@@ -76,7 +77,7 @@ window.textureProbe=async name=>{const gltf=await new GLTFLoader().loadAsync('/a
       assert(result.materials > 0);
       assert.equal(result.broken, 0, name + ": unreadable texture");
       assert(result.textured > 0);
-      if (["cody", "character2", "zombie"].includes(name))
+      if (["cody", "character2", "zombie", "zombieShirt"].includes(name))
         assert.equal(
           result.textured,
           result.materials,

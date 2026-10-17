@@ -1,3 +1,12 @@
+# Unreleased — supplied cabin, zombie variants and Cody material correction (source only)
+
+- Use the supplied log cabin for both exterior and playable ground floor; remove the surrogate room. Derive wall collision from the original mesh, extract its real entrance door for breaking, and preserve floor height / actor grounding.
+- Add the supplied shirt zombie with a fitted rest skeleton and skin weights; randomly select between two distinct character models and retain that choice in saves.
+- Retarget the two supplied Zombie Idle files and Running(2) movement source. Correct the bind wrapper, torso / foot axes and anatomical head frame; smooth the baked leg cycle and derive the second movement rhythm without pose resampling.
+- Disable obsolete runtime rig corrections for the reauthored zombies. Funnel enemies through the actual entrance.
+- Correct all eight Cody materials from alpha blend to opaque, fixing see-through skin, missing-looking eyes and clothing sorting. Refresh portraits.
+- Add actual cabin, variant persistence, opaque material and full-cycle movement regression coverage. No APK generated.
+
 # Unreleased — rifle locomotion and Cody overlap correction (source only)
 
 - Retarget the uploaded Rifle Idle / Rifle Run FBX clips to both May and Cody as RifleIdle / RifleRun.

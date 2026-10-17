@@ -103,6 +103,7 @@ export function sanitizeSave(raw) {
       hp: num(e.hp, 100, 1, 100),
       idle: e.idle,
       move: e.move,
+      model: e.model === "shirt" ? "shirt" : "flesh",
       pace: num(e.pace, 1, 0.7, 1.3),
     }));
   s.picked = Array.isArray(raw.picked)
@@ -147,6 +148,7 @@ export function pickZombieActions(state) {
     idle: ["Idle_Sway", "Idle_Lurch"][Math.floor(random(state) * 2)],
     move: ["Walk_Shuffle", "Walk_Heavy"][Math.floor(random(state) * 2)],
     pace: 0.85 + random(state) * 0.25,
+    model: random(state) < .5 ? "flesh" : "shirt",
   });
 }
 
@@ -157,12 +159,12 @@ export function freshPrologue(seed) {
   s.weapon = null;
   s.inventory = {};
   s.player = {
-    position: [-1, 0, 3],
+    position: [1, 0, -1],
     yaw: Math.PI,
     hp: 100,
     ammo: 0,
     reserve: 0,
   };
-  s.cody = { position: [1, 0, 3.5], yaw: Math.PI };
+  s.cody = { position: [3, 0, 0], yaw: Math.PI };
   return s;
 }

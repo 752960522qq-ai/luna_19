@@ -1,4 +1,5 @@
 import test from "node:test";
+import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import * as T from "../web/vendor/three.module.js";
 import { Actor } from "../web/game/actors.js";
@@ -16,7 +17,8 @@ function soleHeight(actor) {
   return min;
 }
 test("all zombie clips retain a visible head, stable scale and soles on the floor", () => {
-  const a = new Actor(assets.zombie, "zombie", new T.Scene());
+ for (const asset of [assets.zombie, assets.zombieShirt]) {
+  const a = new Actor(asset, "zombie", new T.Scene());
   assert(a.soleSamples.length > 0);
   const skull = [];
   a.model.traverse((mesh) => {
@@ -24,7 +26,7 @@ test("all zombie clips retain a visible head, stable scale and soles on the floo
     const joint = mesh.skeleton.bones.indexOf(a.head),
       indices = mesh.geometry.attributes.skinIndex,
       weights = mesh.geometry.attributes.skinWeight;
-    for (let i = 0; i < indices.count; i += 31)
+    for (let i = 0; i < indices.count; i += 13)
       for (let k = 0; k < 4; k++)
         if (
           indices.getComponent(i, k) === joint &&
@@ -45,7 +47,7 @@ test("all zombie clips retain a visible head, stable scale and soles on the floo
     a.play(name, true);
     const action = a.actions.get(name),
       duration = action.getClip().duration;
-    for (const phase of [0, 0.25, 0.5, 0.75, 0.99]) {
+    for (const phase of Array.from({length:41},(_,i)=>i/41)) {
       action.time = duration * phase;
       a.mixer.update(0);
       a.correctGround();
@@ -76,9 +78,14 @@ test("all zombie clips retain a visible head, stable scale and soles on the floo
           0.35,
         `${name}: folded spine`,
       );
+      const hipY = a.hip.getWorldPosition(vector()).y;
+      for (const foot of a.feet)
+        assert(foot.getWorldPosition(vector()).y < hipY - .25,
+          `${name}: foot lifted above a plausible shambling stride`);
     }
   }
   a.remove();
+ }
 });
 test("May and Cody aim without folding the pelvis and hold correctly oriented weapons", () => {
   for (const kind of ["may", "cody"]) {
@@ -168,6 +175,28 @@ test('uploaded rifle idle/run select only when armed and keep both hands support
   a.animate(.2,{moving:true});assert.equal(a.current,'Run');
   a.armed=true;a.setWeapon('m92');a.animate(.2,{});assert.equal(a.current,'PistolReady');
   a.setWeapon('colt723');a.animate(.2,{talk:true});assert.equal(a.current,'Talk');assert(!a.gun.visible);
+  a.remove();
+ }
+});
+
+test('Cody skin, eyes and clothes use opaque surfaces rather than alpha sorting',async()=>{
+ const b=await fs.readFile(new URL('../web/assets/cody_story.glb',import.meta.url));
+ const j=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)));
+ assert.equal(j.materials.length,8);
+ for(const m of j.materials){assert.equal(m.alphaMode||'OPAQUE','OPAQUE',m.name);assert(m.pbrMetallicRoughness.baseColorTexture,m.name);}
+});
+test('both zombie movement cycles loop without sudden foot jumps',()=>{
+ for(const asset of [assets.zombie,assets.zombieShirt]){
+  const a=new Actor(asset,'zombie',new T.Scene());
+  for(const name of ['Walk_Shuffle','Walk_Heavy']){
+   a.play(name,true);const action=a.actions.get(name);let previous;
+   for(let i=0;i<=120;i++){
+    action.time=action.getClip().duration*(i===120?0:i/120);a.mixer.update(0);a.correctGround();
+    const points=a.feet.map(f=>f.getWorldPosition(vector()));
+    if(previous)for(let k=0;k<points.length;k++)assert(points[k].distanceTo(previous[k])<.09,name+' foot teleported');
+    previous=points;
+   }
+  }
   a.remove();
  }
 });
